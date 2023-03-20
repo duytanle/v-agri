@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --primary-color: #007739;
+        --hover-priColor: #204b0d;
+        --secondary-color: #B91C1C;
+        --hover-secColor:#8a1717;
+    }
+    html {
+        font-family: 'Nunito', sans-serif;
+        font-size: 16px;
+        line-height: 24px;
+    }
+    .box-shadow-custom {
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 4px 8px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+    }
+    .text-2-line{
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 24px;
+    }
+    .text-1-line{
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 24px;
+    }
+        .unit-logo:before,
+        .info-img:before,
+        .emp-avatar:before {
+            content: "";
+            position: absolute;
+            z-index: 10;
+            inset: 0;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            border-radius: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), #72e788, var(--primary-color));
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    
+        }
+}

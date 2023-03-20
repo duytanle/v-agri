@@ -1,0 +1,7 @@
+.box-shadow-custom {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 4px 8px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+}
+
+.custom-checkbox input:checked+div {
+    background-color: rgb(0 119 57 / var(--tw-bg-opacity));
+}

@@ -1,0 +1,12 @@
+.custom-radio{
+    box-shadow: 0 0 0 5px white;
+}
+
+.custom-radio input:checked + div {
+    @apply bg-primary-color;
+    box-shadow: 0 0 0 2.5px white, 0 0 0 5px rgb (var(--primary-color) / var(--tw-bg-opacity));
+}
+
+.custom-checkbox input:checked+div {
+    background-color: rgb(0 119 57 / var(--tw-bg-opacity));
+}

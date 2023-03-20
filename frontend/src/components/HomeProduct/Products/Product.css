@@ -1,0 +1,20 @@
+.product-name{
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 24px;
+}
+
+.sale-triangle{
+    border-top-color: #B91C1C;
+    border-right-color: #B91C1C;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+
+}
+
+.box-shadow-custom {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 4px 8px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+}

@@ -1,0 +1,21 @@
+
+
+
+
+
+
+
+
+
+.active-tabs::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% + 2px);
+    height: 5px;
+    background: var(--secondary-color)
+}
+
