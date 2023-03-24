@@ -5,6 +5,7 @@ import addressReducer from "./address/address-slice.js";
 import htxReducer from "./htx/htx-slice.js";
 import productReducer from "./products/product-slice.js";
 import dnReducer from "./dn/dn-slice.js";
+import alanReducer from "./alanai/alan-slice.js";
 export const reducer = combineReducers({
     auth: authReducer,
     users: userReducer,
@@ -12,4 +13,5 @@ export const reducer = combineReducers({
     htx: htxReducer,
     product: productReducer,
     dn: dnReducer,
+    alan: alanReducer,
 });

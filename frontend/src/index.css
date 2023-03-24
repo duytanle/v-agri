@@ -9,6 +9,9 @@
         --secondary-color: #B91C1C;
         --hover-secColor:#8a1717;
     }
+    #root{
+        position: relative;
+    }
     html {
         font-family: 'Nunito', sans-serif;
         font-size: 16px;

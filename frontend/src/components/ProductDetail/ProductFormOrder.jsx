@@ -5,10 +5,17 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "../CustomForm/Input.jsx";
 import Dropdown from "../CustomForm/Dropdown.jsx";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { updateAlan } from "../../store/alanai/alan-slice.js";
+import { toast } from "react-toastify";
 const ProductFormOrder = ({ edit = false, dataEdit }) => {
     const { productDetail } = useSelector((state) => state.product);
-    const { userUnit, accessToken } = useSelector((state) => state.auth);
+    const { user, userUnit, accessToken } = useSelector((state) => state.auth);
+    const { command, checkVoice } = useSelector((state) => state.alan);
+
+    const navigate = useNavigate();
     const dispatch = useDispatch();
+
     const unitData = productDetail?.SP_SoLuongCungCau?.split(" ")[1];
 
     let dropdownUnitData = [
@@ -105,7 +112,7 @@ const ProductFormOrder = ({ edit = false, dataEdit }) => {
             GH_ChuKyNhan: `${values.orderCycle} ${values.orderCycleUnit}`,
         };
         dispatch({
-            type: "ADD_TO_CART",
+            type: "DN_ADD_TO_CART",
             payload: { token: accessToken, data },
         });
     };
@@ -126,6 +133,57 @@ const ProductFormOrder = ({ edit = false, dataEdit }) => {
     const orderProduct = (values) => {
         console.log(values);
     };
+
+    useEffect(() => {
+        if (Object.keys(command).length > 0) {
+            switch (command.COMMAND) {
+                case "DAT_HANG": {
+                    handleSubmit(orderProduct)();
+                    break;
+                }
+                case "SO_LUONG": {
+                    setValue("productAmount", command.value[0]);
+                    let checkUnit = false;
+                    for (let i = 0; i < dropdownUnitData.length; ++i) {
+                        if (dropdownUnitData[i].value === command.value[1]) {
+                            checkUnit = true;
+                            break;
+                        }
+                    }
+                    if (checkUnit) {
+                        setValue("productUnit", command.value[1]);
+                    } else {
+                        setValue("productUnit", "default");
+                        toast.warn("Đơn vị tính không phù hợp", {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    }
+                    break;
+                }
+                default: {
+                    toast.warn("Không hiểu câu lệnh", {
+                        position: "top-right",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                    });
+                    break;
+                }
+            }
+            dispatch(updateAlan({}));
+        }
+    }, [checkVoice]);
 
     return (
         <form

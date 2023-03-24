@@ -1,32 +1,86 @@
-import React from "react";
+import React, { Fragment, useState } from "react";
 import OrderItem from "./OrderItem";
 import OrderAddress from "./OrderAddress";
 import { useSelector } from "react-redux";
-const OrderList = () => {
-    const { cart } = useSelector((state) => state.dn);
+const OrderList = ({ infoShip, setInfoShip }) => {
+    const { cart, updateCartItem, orderProduct } = useSelector(
+        (state) => state.dn
+    );
+    const { userUnit } = useSelector((state) => state.auth);
+
+    const orderListProduct = cart.filter((item) => {
+        for (let i = 0; i < orderProduct.length; i++) {
+            if (item.SP_MaSP === orderProduct[i])
+                return item.SP_MaSP === orderProduct[i];
+        }
+    });
+
+    const data = () => {
+        const orderList = [];
+        orderListProduct.map((item) => {
+            if (orderList.length === 0) {
+                orderList.push({ [item.DV_MaDV]: [item] });
+            } else {
+                for (let i = 0; i < orderList.length; ++i) {
+                    const value = orderList[i][item.DV_MaDV];
+                    if (value) {
+                        orderList[i][item.DV_MaDV] = [...value, item];
+                    } else {
+                        orderList.push({ [item.DV_MaDV]: [item] });
+                    }
+                }
+            }
+        });
+        return orderList;
+    };
     return (
         <div className="order-list my-4 ">
-            <div className="info-unit flex gap-3 items-center">
-                <div className="unit-avatar w-6 h-6 border-2 border-primary-color rounded-full">
-                    <img
-                        src="/images/non-text-logo.png"
-                        alt=""
-                        className="w-full h-full"
-                    />
-                </div>
-                <div className="unit-name font-bold text-lg">
-                    HTX Tiên Lãng Hải Phòng
-                </div>
-            </div>
             <div className="info-products-order my-4 w-[90%] mx-auto grid grid-cols-12 gap-5">
                 <div className="col-span-8">
-                    {cart.map((item) => (
-                        <OrderItem data={item} key={item.SP_MaSP}></OrderItem>
-                    ))}
-                </div>
-                <div className="col-span-4 flex flex-col gap-4">
-                    <OrderAddress></OrderAddress>
-                    <OrderAddress></OrderAddress>
+                    {data().map((item, index) => {
+                        return (
+                            <Fragment key={index}>
+                                <div className="mb-2 flex gap-5 items-center">
+                                    <div className="logo w-10 h-10 border-[2px] border-primary-color rounded-full overflow-hidden">
+                                        <img
+                                            src={
+                                                item[Object.keys(item)[0]][0]
+                                                    .DV_Logo
+                                            }
+                                            alt=""
+                                            className="w-10 h-10 object-cover"
+                                        />
+                                    </div>
+                                    <div className="text-lg font-bold">
+                                        {
+                                            item[Object.keys(item)[0]][0]
+                                                .DV_TenDonVi
+                                        }
+                                    </div>
+                                </div>
+                                <div className="ml-10">
+                                    {item[Object.keys(item)[0]].map(
+                                        (data, index) => (
+                                            <div
+                                                className="relative"
+                                                key={index}
+                                            >
+                                                <OrderItem
+                                                    edit={false}
+                                                    data={data}
+                                                    type="order"
+                                                    ship={infoShip[index]}
+                                                    setInfoShip={setInfoShip}
+                                                    infoShip={infoShip}
+                                                    index={index}
+                                                ></OrderItem>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            </Fragment>
+                        );
+                    })}
                 </div>
             </div>
         </div>

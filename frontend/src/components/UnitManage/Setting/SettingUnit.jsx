@@ -376,7 +376,7 @@ const SettingUnit = () => {
                         </div>
                         <div className="unit-phone text-lg my-3">
                             <label
-                                htmlFor="unitPhone"
+                                htmlFor="unitProvince"
                                 className="font-bold  col-span-4"
                             >
                                 Địa chỉ:

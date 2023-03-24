@@ -37,3 +37,38 @@ export const requestCreateProduct = ({ token, product }) => {
         },
     });
 };
+
+export const requestConfirmOrder = ({ token, data }) => {
+    if (!token) return;
+    return axios.put("/htx/confirm-order", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const requestCancelOrder = ({ token, data }) => {
+    if (!token) return;
+    return axios.put("/htx/cancel-order", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const requestShip = ({ token, data }) => {
+    if (!token) return;
+    return axios.put("/htx/ship-order", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+export const requestIntroProduct = ({ token, data }) => {
+    if (!token) return;
+    return axios.put("/htx/intro-product", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};

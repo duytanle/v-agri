@@ -247,7 +247,7 @@ const authController = {
                         result["TT_MaTT"] = dia_chi.TT_MaTT;
                         result[
                             "DV_DiaChi"
-                        ] = `${dia_chi.DCCT_TenDiaChi} ${dia_chi.XP_TenXaPhuong} ${dia_chi.QH_TenQuanHuyen} ${dia_chi.TT_TenTinhThanh}`;
+                        ] = `${dia_chi.DCCT_TenDiaChi}, ${dia_chi.XP_TenXaPhuong}, ${dia_chi.QH_TenQuanHuyen}, ${dia_chi.TT_TenTinhThanh}`;
                     }
                 }
                 return res.status(201).json({ status: true, result });

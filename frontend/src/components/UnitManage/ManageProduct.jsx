@@ -1,18 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Products from "../HomeProduct/Products";
 import Filter from "../HomeProduct/Filter";
 import ProductCE from "./ManageProduct/ProductCE";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ProductFormDN from "./ManageProduct/ProductFormDN";
+import { productUpdateCurrentProducts } from "../../store/products/product-slice";
 const ManageProduct = () => {
     const { user } = useSelector((state) => state.auth);
     const [addProduct, setAddProduct] = useState(false);
-
+    const { products } = useSelector((state) => state.product);
+    const dispatch = useDispatch();
     const listData = [
         { name: "Tất cả", value: "all" },
         { name: "Quản lý sản phẩm", value: "post" },
         { name: "Quản lý đơn hàng", value: "order" },
     ];
+    useEffect(() => {
+        const currentProducts = products.filter(
+            (item) => item.LSP_MaLSP === user.LND_MaLND
+        );
+        dispatch(productUpdateCurrentProducts({ currentProducts }));
+    }, []);
     return (
         <div
             className={`setting py-3 px-5 ${addProduct ? "h-max" : "h-full"} `}

@@ -19,6 +19,10 @@ export async function getByColumn(table, column, where) {
     return rows;
 }
 
+export async function getByColumnCons(table, where) {
+    const [rows] = await pool.query(`SELECT * from ${table} WHERE ${where}`);
+    return rows;
+}
 export async function postRow(table, fields, values) {
     const result = await pool.query(
         `INSERT INTO ${table} (${fields}) values (${values})`

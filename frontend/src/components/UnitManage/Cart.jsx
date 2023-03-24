@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { dnUpdateOrderProduct } from "../../store/dn/dn-slice";
+import {
+    dnClearTotalOrder,
+    dnUpdateOrderProduct,
+} from "../../store/dn/dn-slice";
 import OrderItem from "../OrderProduct/OrderItem";
 
 const Cart = () => {
@@ -12,22 +15,22 @@ const Cart = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const data = () => {
-        const temp = [];
+        const cartList = [];
         cart.map((item) => {
-            if (temp.length === 0) {
-                temp.push({ [item.DV_MaDV]: [item] });
+            if (cartList.length === 0) {
+                cartList.push({ [item.DV_MaDV]: [item] });
             } else {
-                for (let i = 0; i < temp.length; ++i) {
-                    const value = temp[i][item.DV_MaDV];
+                for (let i = 0; i < cartList.length; ++i) {
+                    const value = cartList[i][item.DV_MaDV];
                     if (value) {
-                        temp[i][item.DV_MaDV] = [...value, item];
+                        cartList[i][item.DV_MaDV] = [...value, item];
                     } else {
-                        temp.push({ [item.DV_MaDV]: [item] });
+                        cartList.push({ [item.DV_MaDV]: [item] });
                     }
                 }
             }
         });
-        return temp;
+        return cartList;
     };
     const handleOrder = () => {
         if (selectedItem.length === 0) {
@@ -77,6 +80,9 @@ const Cart = () => {
     useEffect(() => {
         dispatch({ type: "GET_CART", payload: accessToken });
     }, [updateCartItem]);
+    useEffect(() => {
+        dispatch(dnClearTotalOrder());
+    }, []);
     return (
         <div className="manage-order h-full py-3 px-5 ">
             <div className=" font-bold text-2xl ">Quản lý giỏ hàng</div>
@@ -90,13 +96,10 @@ const Cart = () => {
                         setSelectedItem={setSelectedItem}
                     ></OrderItem>
                 ))} */}
-                {data().map((item) => {
+                {data().map((item, index) => {
                     return (
-                        <>
-                            <div
-                                key={item[Object.keys(item)[0]][0].DV_TenDonVi}
-                                className="mb-2 flex gap-5 items-center"
-                            >
+                        <Fragment key={index}>
+                            <div className="mb-2 flex gap-5 items-center">
                                 <div className="logo w-10 h-10 border-[2px] border-primary-color rounded-full overflow-hidden">
                                     <img
                                         src={
@@ -116,13 +119,13 @@ const Cart = () => {
                                     <OrderItem
                                         edit={true}
                                         data={data}
-                                        key={item.SP_MaSP}
+                                        key={data.SP_MaSP}
                                         selectedItem={selectedItem}
                                         setSelectedItem={setSelectedItem}
                                     ></OrderItem>
                                 ))}
                             </div>
-                        </>
+                        </Fragment>
                     );
                 })}
             </div>

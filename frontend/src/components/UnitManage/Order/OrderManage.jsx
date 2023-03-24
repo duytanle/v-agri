@@ -1,30 +1,150 @@
-import React from "react";
-import OrderAddress from "../../OrderProduct/OrderAddress";
-import OrderItem from "../../OrderProduct/OrderItem";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import OrderListManage from "./OrderListManage";
 
 const OrderManage = () => {
+    const [tab, setTab] = useState("allOrder");
+    const { user, userUnit, accessToken } = useSelector((state) => state.auth);
+    const { orders } = useSelector((state) => state.product);
+    const dispatch = useDispatch();
+    useEffect(() => {}, []);
     return (
-        <div className="order-list my-4 ">
-            <div className="info-unit flex gap-3 items-center">
-                <div className="unit-avatar w-6 h-6 border-2 border-primary-color rounded-full">
-                    <img
-                        src="/images/non-text-logo.png"
-                        alt=""
-                        className="w-full h-full"
-                    />
+        <div className="order-list mt-4 ">
+            <div className="setting-tabs flex flex-col h-[580px] relative pt-2">
+                <div className="title-tabs grid grid-cols-5 gap-5">
+                    <button
+                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                            tab === "allOrder"
+                                ? "bg-white text-black active-tabs"
+                                : "text-white"
+                        }`}
+                        onClick={() => setTab("allOrder")}
+                    >
+                        Tất cả đơn hàng
+                    </button>
+                    <button
+                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                            tab === "orderConfirm"
+                                ? "bg-white text-black active-tabs"
+                                : "text-white"
+                        }`}
+                        onClick={() => setTab("orderConfirm")}
+                    >
+                        Chờ xác nhận
+                    </button>
+                    <button
+                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                            tab === "orderProcessing"
+                                ? "bg-white text-black active-tabs"
+                                : "text-white"
+                        }`}
+                        onClick={() => setTab("orderProcessing")}
+                    >
+                        Đang thực hiện
+                    </button>
+                    <button
+                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                            tab === "orderCancel"
+                                ? "bg-white text-black active-tabs"
+                                : "text-white"
+                        }`}
+                        onClick={() => setTab("orderCancel")}
+                    >
+                        Đã hủy
+                    </button>
+                    <button
+                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                            tab === "orderFinished"
+                                ? "bg-white text-black active-tabs"
+                                : "text-white"
+                        }`}
+                        onClick={() => setTab("orderFinished")}
+                    >
+                        Đã hoàn thành
+                    </button>
                 </div>
-                <div className="unit-name font-bold text-lg">
-                    HTX Tiên Lãng Hải Phòng
-                </div>
-            </div>
-            <div className="info-products-order my-2 w-[90%] mx-auto grid grid-cols-12 gap-5">
-                <div className="col-span-7">
-                    <OrderItem></OrderItem>
-                    <OrderItem></OrderItem>
-                </div>
-                <div className="col-span-5 flex flex-col gap-4">
-                    <OrderAddress></OrderAddress>
-                    <OrderAddress></OrderAddress>
+
+                <div className="content-tabs w-full h-full mt-5">
+                    <div
+                        className={` order-all w-full h-full  ${
+                            tab === "allOrder"
+                                ? "block animate__animated animate__fadeIn"
+                                : "hidden"
+                        }`}
+                    >
+                        <div className="w-full h-full box-shadow-custom rounded-xl">
+                            <OrderListManage
+                                tab={tab}
+                                orderList={orders}
+                            ></OrderListManage>
+                        </div>
+                    </div>
+
+                    <div
+                        className={` order-confirm w-full h-full  ${
+                            tab === "orderConfirm"
+                                ? "block animate__animated animate__fadeIn"
+                                : "hidden"
+                        }`}
+                    >
+                        <div className="w-full h-full box-shadow-custom rounded-xl">
+                            <OrderListManage
+                                tab={tab}
+                                orderList={orders.filter(
+                                    (item) => item.TTDH_MaTTDH === "CXN"
+                                )}
+                            ></OrderListManage>
+                        </div>
+                    </div>
+
+                    <div
+                        className={` order-processing w-full h-full  ${
+                            tab === "orderProcessing"
+                                ? "block animate__animated animate__fadeIn"
+                                : "hidden"
+                        }`}
+                    >
+                        <div className="w-full h-full box-shadow-custom rounded-xl">
+                            <OrderListManage
+                                tab={tab}
+                                orderList={orders.filter(
+                                    (item) => item.TTDH_MaTTDH === "DTH"
+                                )}
+                            ></OrderListManage>
+                        </div>
+                    </div>
+                    <div
+                        className={` order-cancel w-full h-full  ${
+                            tab === "orderCancel"
+                                ? "block animate__animated animate__fadeIn"
+                                : "hidden"
+                        }`}
+                    >
+                        <div className="w-full h-full box-shadow-custom rounded-xl">
+                            <OrderListManage
+                                tab={tab}
+                                orderList={orders.filter(
+                                    (item) => item.TTDH_MaTTDH === "HUY"
+                                )}
+                            ></OrderListManage>
+                        </div>
+                    </div>
+                    <div
+                        className={` order-finished  w-full h-full  ${
+                            tab === "orderFinished"
+                                ? "block animate__animated animate__fadeIn"
+                                : "hidden"
+                        }`}
+                    >
+                        <div className="w-full h-full box-shadow-custom rounded-xl">
+                            <OrderListManage
+                                tab={tab}
+                                orderList={orders.filter(
+                                    (item) => item.TTDH_MaTTDH === "DHT"
+                                )}
+                            ></OrderListManage>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

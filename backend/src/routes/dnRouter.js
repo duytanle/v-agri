@@ -23,4 +23,8 @@ router.post("/update-info", verifyToken, dnController.updateInfo);
 router.post("/add-to-cart", verifyToken, dnController.addToCart);
 router.get("/get-cart", verifyToken, dnController.getCart);
 router.put("/update-cart-item", verifyToken, dnController.updateCartItem);
+router.post("/order", verifyToken, dnController.orderProduct);
+router.get("/get-order", verifyToken, dnController.getOrder);
+router.put("/receive-order", verifyToken, dnController.receiveOrder);
+router.get("/get-intro", verifyToken, dnController.getIntro);
 export default router;

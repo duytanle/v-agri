@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "../Portal/Modal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ProductFormOrder from "../ProductDetail/ProductFormOrder";
+import { dnUpdateTotalOrder } from "../../store/dn/dn-slice";
+import OrderEditShip from "./OrderEditShip";
 const OrderItem = ({ edit = false, data, ...props }) => {
     const [modal, showModal] = useState(false);
     const { products } = useSelector((state) => state.product);
     const [product] = products.filter((item) => item.SP_MaSP === data.SP_MaSP);
-
+    const dispatch = useDispatch();
     const timesReceiving = () => {
         const orderTime = data.GH_ThoiHan.split(" ");
         const cycleReceiving = data.GH_ChuKyNhan.split(" ");
@@ -53,35 +55,51 @@ const OrderItem = ({ edit = false, data, ...props }) => {
     const calculatePrice = () => {
         const times = Math.floor(timesReceiving());
         const soluong = data.GH_SoLuong.split(" ");
+        const phanTram = data.KM_PhanTram;
+        const phanTramString = phanTram ? `*${100 - phanTram} %` : ``;
         let price = 1;
         if (product.GSP_DonViTinh !== soluong[1]) {
             if (soluong[1] === "kg") {
                 price = (
                     ((parseFloat(soluong[0]) * product.GSP_Gia) / 1000) *
-                    times
+                    times *
+                    (phanTram ? (100 - phanTram) / 100 : 1)
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) / 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh})  * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) / 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
             } else {
                 price = (
                     parseFloat(soluong[0]) *
                     product.GSP_Gia *
                     1000 *
-                    times
+                    times *
+                    (phanTram ? (100 - phanTram) / 100 : 1)
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) * 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) * 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
             }
         } else {
-            price = (parseFloat(soluong[0]) * product.GSP_Gia * times)
+            price = (
+                parseFloat(soluong[0]) *
+                product.GSP_Gia *
+                times *
+                (phanTram ? (100 - phanTram) / 100 : 1)
+            )
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-            return `${soluong[0]} (${soluong[1]}) * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) * ${times} (số lần nhận) = ${price} đồng`;
+
+            return `${soluong[0]} (${soluong[1]}) * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
         }
     };
-
+    useEffect(() => {
+        if (props.type === "order") {
+            const price = calculatePrice().split(" ");
+            const total = price[price.length - 2].replaceAll(".", "");
+            dispatch(dnUpdateTotalOrder(parseInt(total)));
+        }
+    }, []);
     const updateSelectedItem = (event) => {
         if (event.target.checked) {
             props.setSelectedItem([...props.selectedItem, data.SP_MaSP]);
@@ -94,7 +112,7 @@ const OrderItem = ({ edit = false, data, ...props }) => {
         }
     };
     return (
-        <div className="order-item w-full flex items-center gap-4 box-shadow-custom  rounded-lg px-4 py-3 mb-4">
+        <div className="order-item relative w-full flex items-center gap-4 box-shadow-custom rounded-lg px-4 py-3 mb-4 ">
             {edit ? (
                 <input
                     type="checkbox"
@@ -215,6 +233,47 @@ const OrderItem = ({ edit = false, data, ...props }) => {
                     </>
                 ) : null}
             </div>
+            {props.type === "order" ? (
+                <>
+                    <div className="address-list absolute left-[105%] -top-0 w-1/2 ">
+                        <div className="info-products-order relative mx-auto box-shadow-custom px-2 pt-1 pb-4 rounded-md">
+                            <div
+                                className="absolute cursor-pointer top-[10px] -right-2 w-8 h-8"
+                                onClick={() => showModal(true)}
+                            >
+                                <i className="fa-solid fa-pen-to-square"></i>
+                            </div>
+                            <div className="item-name text-lg font-bold my-2">
+                                <span>Thông Tin Giao Hàng</span>
+                            </div>
+
+                            <div className="flex justify-between my-1">
+                                <div className="item-phone">
+                                    <img
+                                        src="/images/phone.png"
+                                        alt=""
+                                        className="w-5 h-5 inline-block mr-1"
+                                    />
+                                    <span>{props.ship?.shipPhone}</span>
+                                </div>
+                            </div>
+                            <div className="item-address">
+                                <span className="text-red-700 font-bold">
+                                    Địa chỉ giao hàng:{" "}
+                                </span>
+                                <span>{props.ship?.shipAddress}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <OrderEditShip
+                        modal={modal}
+                        showModal={showModal}
+                        infoShip={props.infoShip}
+                        setInfoShip={props.setInfoShip}
+                        index={props.index}
+                    ></OrderEditShip>
+                </>
+            ) : null}
         </div>
     );
 };

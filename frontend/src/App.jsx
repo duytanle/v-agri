@@ -17,6 +17,7 @@ import {
     productGetProducts,
     productUpdateCurrentProducts,
 } from "./store/products/product-slice";
+import AlanAI from "./components/AlanAI/AlanAI";
 
 const Header = lazy(() => import("./components/Header/Header.jsx"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail.jsx"));
@@ -65,6 +66,7 @@ const OrderDetail = lazy(() =>
     import("./components/UnitManage/Order/OrderDetail.jsx")
 );
 const Cart = lazy(() => import("./components/UnitManage/Cart.jsx"));
+const Intro = lazy(() => import("./components/UnitManage/Intro.jsx"));
 function App() {
     const { user, accessToken } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.product);
@@ -137,6 +139,7 @@ function App() {
         <>
             <ToastContainer style={{ zIndex: 9999 }}></ToastContainer>
             <Header></Header>
+            <AlanAI></AlanAI>
             <Suspense>
                 <Routes>
                     <Route path="/" element={checkUserType()}>
@@ -258,9 +261,14 @@ function App() {
                                         element={<Cart></Cart>}
                                     ></Route>
                                     <Route
+                                        path="chao_hang"
+                                        element={<Intro></Intro>}
+                                    ></Route>
+                                    <Route
                                         path="thong_bao"
                                         element={<Announce></Announce>}
                                     ></Route>
+
                                     <Route
                                         path="canh_bao"
                                         element={<></>}

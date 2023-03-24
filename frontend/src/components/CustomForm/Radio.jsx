@@ -5,12 +5,18 @@ const Radio = ({ control, ...props }) => {
     const { field } = useController({
         control,
         name: props.name,
-        defaultValue: "",
+        defaultValue: props.value,
     });
     return (
-        <label className="h-[10px] w-[10px] cursor-pointer custom-radio">
-            <input type="radio" {...field} {...props} className="hidden" />
-            <div className="h-full w-full bg-white rounded-full"></div>
+        <label className="cursor-pointer custom-radio h-[20px] w-[20px] shrink-0 flex justify-center items-center bg-white rounded-full border-2 border-primary-color">
+            <input
+                {...field}
+                type="radio"
+                value={props.value}
+                className="hidden"
+                {...props}
+            />
+            <div className="w-[12px] h-[12px] bg-white rounded-full"></div>
         </label>
     );
 };

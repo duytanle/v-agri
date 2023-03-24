@@ -20,4 +20,9 @@ router.post(
 
 router.post("/create-product", verifyToken, htxController.createProduct);
 router.post("/update-info", verifyToken, htxController.updateInfo);
+router.get("/get-order", verifyToken, htxController.getOrder);
+router.put("/confirm-order", verifyToken, htxController.confirmOrder);
+router.put("/cancel-order", verifyToken, htxController.cancelOrder);
+router.put("/ship-order", verifyToken, htxController.shipOrder);
+router.put("/intro-product", verifyToken, htxController.introProduct);
 export default router;

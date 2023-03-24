@@ -1,7 +1,7 @@
 import React from "react";
 import "./Product.css";
 import ProductStandard from "./ProductStandard";
-const Product = ({ data, customProduct = "", onView }) => {
+const Product = ({ data, customProduct = "", onView, ...props }) => {
     const standardColor = {
         OCOP: "[#FF78F0]",
         VG: "[#2DCDDF]",
@@ -28,7 +28,13 @@ const Product = ({ data, customProduct = "", onView }) => {
                 />
             </div>
             <div className="product-info p-2 flex flex-col justify-between h-[40%]">
-                <div className="product-name font-bold leading-5 text-2-line text-[18px] h-[45px]">
+                <div
+                    className={`product-name font-bold text-2-line ${
+                        props.customTSP
+                            ? props.customTSP
+                            : "leading-5  text-[18px] h-[45px]"
+                    }`}
+                >
                     {data.SP_TenSanPham}
                 </div>
                 {data.LSP_MaLSP === "DN" ? (

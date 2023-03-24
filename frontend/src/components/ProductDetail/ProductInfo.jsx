@@ -1,13 +1,48 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { Fragment, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import ProductFormOrder from "./ProductFormOrder";
-
+import Modal from "../../components/Portal/Modal.jsx";
+import Product from "../HomeProduct/Products/Product";
 const ProductInfo = () => {
-    const { user } = useSelector((state) => state.auth);
-    const { productDetail } = useSelector((state) => state.product);
+    const { user, userUnit, accessToken } = useSelector((state) => state.auth);
+    const { products, productDetail } = useSelector((state) => state.product);
     const { detailUnit } = useSelector((state) => state.product);
+    const [modal, showModal] = useState(false);
+    const [listIntro, setListIntro] = useState([]);
+    const dispatch = useDispatch();
     const arraySP_Chuan = productDetail?.SP_Chuan?.split(", ") || [];
+    const userProduct = products.filter(
+        (item) => item.DV_MaDV === userUnit?.DV_MaDV
+    );
+    const handleChoose = (event) => {
+        if (event.target.checked) {
+            setListIntro([...listIntro, event.target.id]);
+        } else {
+            const newList = JSON.parse(JSON.stringify(listIntro));
+            const indexIntro = newList.indexOf(event.target.id);
+            newList.splice(indexIntro, 1);
+            setListIntro(newList);
+        }
+    };
+    const handleIntroProduct = () => {
+        console.log(listIntro);
+        dispatch({
+            type: "HTX_INTRO_PRODUCT",
+            payload: {
+                token: accessToken,
+                data: {
+                    SP_MaSP: productDetail.SP_MaSP,
+                    DV_MaDV: productDetail.DV_MaDV,
+                    HTX_MaQL: userUnit.HTX_MaQL,
+                    SPGT_DanhSach: listIntro,
+                    ND_MaND: user.ND_MaND,
+                },
+            },
+        });
+        setListIntro([]);
+        showModal(false);
+    };
     return (
         <div className="product-info relative z-0 h-full">
             <div className="info-background h-2/3">
@@ -182,7 +217,10 @@ const ProductInfo = () => {
                         </div>
                         <div className="mt-[80px] w-full text-center ">
                             {user ? (
-                                <div className="bg-primary-color text-white font-bold text-lg rounded-lg py-2 px-4 w-max mx-auto cursor-pointer hover:bg-hover-priColor">
+                                <div
+                                    className="bg-primary-color text-white font-bold text-lg rounded-lg py-2 px-4 w-max mx-auto cursor-pointer hover:bg-hover-priColor"
+                                    onClick={() => showModal(true)}
+                                >
                                     Chào hàng
                                 </div>
                             ) : (
@@ -192,6 +230,51 @@ const ProductInfo = () => {
                             )}
                         </div>
                     </div>
+                    <Modal
+                        visible={modal}
+                        onClose={() => showModal(false)}
+                        bodyClassName="w-[800px] h-[500px] bg-white rounded-xl px-4 py-3 relative"
+                    >
+                        <div
+                            className="absolute top-1 right-1 p-1 w-10 h-10 text-white text-xl font-bold rounded-full bg-secondary-color flex justify-center items-center cursor-pointer hover:bg-hover-secColor"
+                            onClick={() => showModal(false)}
+                        >
+                            <i className="fa-solid fa-xmark"></i>
+                        </div>
+                        <div className="title text-2xl text-center font-bold">
+                            Chọn sản phẩm tương ứng để chào hàng
+                        </div>
+                        <div className="flex gap-x-8 gap-y-1 mt-10 h-[75%] w-[85%] mx-auto overflow-x-scroll p-3">
+                            {userProduct.map((item, index) => (
+                                <div
+                                    className="flex flex-col gap-3 items-center justify-center"
+                                    key={index}
+                                >
+                                    <Product
+                                        data={item}
+                                        customProduct="h-[275px] min-w-[185px] max-w-[185px]"
+                                        customTSP="leading-4 h-[35px] text-base"
+                                        onView={() => {}}
+                                    ></Product>
+                                    <input
+                                        type="checkbox"
+                                        name={item.SP_MaSP}
+                                        id={item.SP_MaSP}
+                                        className="cursor-pointer w-5 h-5 accent-primary-color"
+                                        onChange={handleChoose}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="w-full mt-2">
+                            <div
+                                className="w-max mx-auto bg-primary-color rounded-lg text-white px-3 py-2 font-bold cursor-pointer hover:bg-hover-priColor"
+                                onClick={handleIntroProduct}
+                            >
+                                Chào hàng
+                            </div>
+                        </div>
+                    </Modal>
                 </div>
             )}
         </div>

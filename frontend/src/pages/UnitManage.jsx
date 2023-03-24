@@ -4,8 +4,19 @@ import { Outlet } from "react-router-dom";
 import ManageNav from "../components/UnitManage/ManageNav";
 import "../components/UnitManage/UnitManage.css";
 const UnitManage = () => {
-    const { user, accessToken } = useSelector((state) => state.auth);
+    const { user, accessToken, userUnit } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
+    const checkUser =
+        user.LND_MaLND === "DN"
+            ? [
+                  {
+                      id: 4,
+                      icon: "fa-solid fa-cart-shopping",
+                      link: "/quan_ly/gio_hang",
+                      name: "Giỏ hàng",
+                  },
+              ]
+            : [];
     const nav = [
         {
             id: 1,
@@ -25,12 +36,7 @@ const UnitManage = () => {
             link: "/quan_ly/don_hang",
             name: "Đơn hàng",
         },
-        {
-            id: 4,
-            icon: "fa-solid fa-cart-shopping",
-            link: "/quan_ly/gio_hang",
-            name: "Giỏ hàng",
-        },
+        ...checkUser,
         {
             id: 5,
             icon: "fa-solid fa-box",
@@ -71,6 +77,14 @@ const UnitManage = () => {
     useEffect(() => {
         if (user.LND_MaLND === "DN") {
             dispatch({ type: "GET_CART", payload: accessToken });
+            dispatch({
+                type: "DN_GET_INTRO",
+                payload: {
+                    token: accessToken,
+                    DV_MaDV: userUnit.DV_MaDV,
+                    ND_MaND: user.ND_MaND,
+                },
+            });
         }
     }, []);
     return (

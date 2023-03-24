@@ -1,13 +1,16 @@
 import { call, put } from "redux-saga/effects";
 import {
+    requestDNGetOrder,
     requestGetCategory,
     requestGetProducts,
     requestGetUnitDetail,
+    requestHTXGetOrder,
 } from "./product-requests";
 import {
     productUpdateCategory,
     productUpdateDetailUnit,
     productUpdateProducts,
+    updateOrders,
 } from "./product-slice";
 
 function* handleGetCategory() {
@@ -48,4 +51,53 @@ function* handleGetUnitDetail({ payload }) {
         console.log(error);
     }
 }
-export { handleGetCategory, handleGetProducts, handleGetUnitDetail };
+
+function* handleDNGetOrder({ payload }) {
+    try {
+        const response = yield call(requestDNGetOrder, payload);
+        if (response.data.status) {
+            yield put(updateOrders({ orders: response.data.result }));
+        } else {
+            toast.error(response.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+function* handleHTXGetOrder({ payload }) {
+    try {
+        const response = yield call(requestHTXGetOrder, payload);
+        if (response.data.status) {
+            yield put(updateOrders({ orders: response.data.result }));
+        } else {
+            toast.error(response.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+export {
+    handleGetCategory,
+    handleGetProducts,
+    handleGetUnitDetail,
+    handleDNGetOrder,
+    handleHTXGetOrder,
+};

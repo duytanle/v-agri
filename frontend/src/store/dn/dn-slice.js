@@ -6,6 +6,8 @@ const dnSlice = createSlice({
         cart: [],
         updateCartItem: false,
         orderProduct: [],
+        totalOrder: 0,
+        intro: [],
     },
 
     reducers: {
@@ -22,6 +24,18 @@ const dnSlice = createSlice({
             ...state,
             orderProduct: action.payload.orderProduct,
         }),
+        dnUpdateTotalOrder: (state, action) => ({
+            ...state,
+            totalOrder: state.totalOrder + action.payload,
+        }),
+        dnClearTotalOrder: (state, action) => ({
+            ...state,
+            totalOrder: 0,
+        }),
+        dnUpdateIntro: (state, action) => ({
+            ...state,
+            intro: action.payload.intro,
+        }),
     },
 });
 
@@ -30,5 +44,8 @@ export const {
     dnUpdateCart,
     dnUpdateCartItem,
     dnUpdateOrderProduct,
+    dnUpdateTotalOrder,
+    dnClearTotalOrder,
+    dnUpdateIntro,
 } = dnSlice.actions;
 export default dnSlice.reducer;

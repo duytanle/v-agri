@@ -8,6 +8,7 @@ const productSlice = createSlice({
         currentProducts: [],
         productDetail: {},
         detailUnit: {},
+        orders: [],
     },
     reducers: {
         productGetCategory: (state, action) => {},
@@ -32,6 +33,10 @@ const productSlice = createSlice({
             ...state,
             currentProducts: action.payload.currentProducts,
         }),
+        updateOrders: (state, action) => ({
+            ...state,
+            orders: action.payload.orders,
+        }),
     },
 });
 
@@ -43,5 +48,6 @@ export const {
     productUpdateProductDetail,
     productUpdateDetailUnit,
     productUpdateCurrentProducts,
+    updateOrders,
 } = productSlice.actions;
 export default productSlice.reducer;

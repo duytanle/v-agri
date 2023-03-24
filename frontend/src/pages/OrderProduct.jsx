@@ -1,10 +1,54 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "../components/OrderProduct/OrderProduct.css";
 import OrderList from "../components/OrderProduct/OrderList";
 import OrderPayment from "../components/OrderProduct/OrderPayment";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 const OrderProduct = () => {
-    const { orderProduct, products } = useSelector((state) => state.dn);
+    const { orderProduct, totalOrder, cart } = useSelector((state) => state.dn);
+    const { products } = useSelector((state) => state.product);
+    const { userUnit, accessToken } = useSelector((state) => state.auth);
+
+    const dispatch = useDispatch();
+
+    const [infoShip, setInfoShip] = useState([
+        ...orderProduct.map((item) => {
+            return {
+                shipPhone: userUnit.DV_DienThoai,
+                shipAddress: userUnit.DV_DiaChi,
+                shipDCCT: "",
+                shipMaDCCT: userUnit.DCCT_MaDCCT,
+                shipMaXP: userUnit.XP_MaXP,
+                shipReuse: "",
+            };
+        }),
+    ]);
+    const handleOrder = () => {
+        let info = [];
+        for (let i = 0; i < orderProduct.length; ++i) {
+            let productInfo = products?.find(
+                (item) => item.SP_MaSP === orderProduct[i]
+            );
+            if (productInfo) {
+                const cartInfo = cart.find(
+                    (item) => item.SP_MaSP === orderProduct[i]
+                );
+
+                info.push({ ...cartInfo, GSP_MaGSP: productInfo.GSP_MaGSP });
+            }
+        }
+
+        const data = {
+            infoShip,
+            totalOrder,
+            info,
+            DN_MaQL: userUnit.DN_MaQL,
+        };
+
+        dispatch({
+            type: "ORDER_PRODUCT",
+            payload: { token: accessToken, data },
+        });
+    };
     useEffect(() => {
         if (orderProduct.length == 0) {
             window.history.back();
@@ -18,7 +62,10 @@ const OrderProduct = () => {
                         Thông tin đơn hàng
                     </div>
                     <div className="info-list-order">
-                        <OrderList></OrderList>
+                        <OrderList
+                            infoShip={infoShip}
+                            setInfoShip={setInfoShip}
+                        ></OrderList>
                     </div>
                 </div>
 
@@ -32,13 +79,21 @@ const OrderProduct = () => {
                     <div className="flex justify-between text-lg my-6">
                         <span className="font-bold">Tổng giá trị: </span>
                         <span className="text-red-700 font-bold">
-                            1.500.000.000đ
+                            {`${totalOrder
+                                .toString()
+                                .replace(
+                                    /(\d)(?=(\d\d\d)+(?!\d))/g,
+                                    "$1."
+                                )} đồng`}
                         </span>
                     </div>
                     <div className="text-center">
-                        <button className="px-5 py-3 outline-none bg-primary-color hover:bg-hover-priColor text-white font-bold text-xl rounded-lg">
+                        <div
+                            className="px-5 py-3 bg-primary-color hover:bg-hover-priColor text-white font-bold text-xl rounded-lg cursor-pointer"
+                            onClick={handleOrder}
+                        >
                             Đặt mua
-                        </button>
+                        </div>
                     </div>
                 </div>
             </div>

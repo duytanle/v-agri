@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@alan-ai/alan-sdk-web": "^1.8.43",
     "@hookform/resolvers": "^2.9.11",
     "@reduxjs/toolkit": "^1.9.3",
     "animate.css": "^4.1.1",

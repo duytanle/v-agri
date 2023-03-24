@@ -34,3 +34,30 @@ export const requestUpdateCartItem = ({ token, data }) => {
         },
     });
 };
+
+export const requestOrderProduct = ({ token, data }) => {
+    if (!token) return;
+    return axios.post("/dn/order", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const requestReceive = ({ token, data }) => {
+    if (!token) return;
+    console.log("data");
+    return axios.put("/dn/receive-order", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const requestDNGetIntro = ({ token, ND_MaND, DV_MaDV }) => {
+    if (!token) return;
+    return axios.get("/dn/get-intro", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { ND_MaND, DV_MaDV },
+    });
+};
