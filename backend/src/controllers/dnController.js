@@ -4,6 +4,8 @@ import {
     getMaxID,
     postRow,
     updateRows,
+    getRowJoin,
+    getByColumnCons,
 } from "../services/db.js";
 import commonController from "./commonController.js";
 
@@ -33,9 +35,42 @@ const dnController = {
             });
         }
     },
+    updateProduct: async (req, res) => {
+        if (req.LND_MaLND !== "DN") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            const data = req.body;
+            try {
+                await updateRows(
+                    "san_pham",
+                    `DMSP_MaDMSP="${data.DMSP_MaDMSP}", SP_TenSanPham="${
+                        data.SP_TenSanPham
+                    }", SP_SoLuongCungCau="${
+                        data.SP_SoLuongCungCau
+                    }", SP_ChuKyCungCau="${data.SP_ChuKyCungCau}", SP_MoTa="${
+                        data.SP_MoTa
+                    }" ${
+                        data.SP_AnhDaiDien !== ""
+                            ? `, SP_AnhDaiDien="${data.SP_AnhDaiDien}"`
+                            : ""
+                    }`,
+                    `DV_MaDV="${data.DV_MaDV}"`
+                );
+                return res.status(201).json({
+                    status: true,
+                    message: "Cập nhật thông tin thành công!",
+                });
+            } catch (error) {
+                console.log(error);
+                return res.status(500);
+            }
+        }
+    },
     updateInfo: async (req, res) => {
         const data = req.body;
-        console.log(data);
         await updateRows(
             "dia_chi_chi_tiet",
             `XP_MaXP="${data.XP_MaXP}", DCCT_TenDiaChi="${data.DCCT_TenDiaChi}"`,
@@ -65,11 +100,24 @@ const dnController = {
         } else {
             const data = req.body;
             try {
-                await postRow(
+                const [exitsSP] = await getByColumnCons(
                     "gio_hang",
-                    "SP_MaSP, DN_MaQL, GH_SoLuong, GH_ChuKyNhan, GH_NgayNhan, GH_ThoiHan",
-                    `"${data.SP_MaSP}", "${data.DN_MaQL}", "${data.GH_SoLuong}", "${data.GH_ChuKyNhan}", "${data.GH_NgayNhan}", "${data.GH_ThoiHan}"`
+                    `SP_MaSP="${data.SP_MaSP}" AND DN_MaQL="${data.DN_MaQL}"`
                 );
+                console.log(exitsSP);
+                if (exitsSP) {
+                    await updateRows(
+                        "gio_hang",
+                        `GH_SoLuong="${data.GH_SoLuong}", GH_ThoiHan="${data.GH_ThoiHan}", GH_ChuKyNhan="${data.GH_ChuKyNhan}", GH_NgayNhan="${data.GH_NgayNhan}"`,
+                        `SP_MaSP="${data.SP_MaSP}" AND DN_MaQL="${data.DN_MaQL}"`
+                    );
+                } else {
+                    await postRow(
+                        "gio_hang",
+                        "SP_MaSP, DN_MaQL, GH_SoLuong, GH_ChuKyNhan, GH_NgayNhan, GH_ThoiHan",
+                        `"${data.SP_MaSP}", "${data.DN_MaQL}", "${data.GH_SoLuong}", "${data.GH_ChuKyNhan}", "${data.GH_NgayNhan}", "${data.GH_ThoiHan}"`
+                    );
+                }
                 return res
                     .status(201)
                     .json({ status: true, message: "Đã thêm vào giỏ hàng" });
@@ -114,26 +162,15 @@ const dnController = {
                             table2: "don_vi",
                             fieldCon: "DV_MaDV",
                         },
+                        {
+                            table1: "san_pham",
+                            table2: "gia_san_pham",
+                            fieldCon: "GSP_MaGSP",
+                        },
                     ],
                     `DN_MaQL="${dn.DN_MaQL}"`
                 );
-                const data = result.map((item) => {
-                    return {
-                        DV_DienThoai: item.DV_DienThoai,
-                        DV_Email: item.DV_Email,
-                        DV_Logo: item.DV_Logo,
-                        DV_MaDV: item.DV_MaDV,
-                        DV_TenDonVi: item.DV_TenDonVi,
-                        GH_ChuKyNhan: item.GH_ChuKyNhan,
-                        GH_NgayNhan: item.GH_NgayNhan,
-                        GH_SoLuong: item.GH_SoLuong,
-                        GH_ThoiHan: item.GH_ThoiHan,
-                        SP_MaSP: item.SP_MaSP,
-                        KM_MaKM: item.KM_MaKM,
-                        KM_PhanTram: item.KM_PhanTram,
-                    };
-                });
-                return res.status(201).json({ status: true, result: data });
+                return res.status(201).json({ status: true, result });
             } catch (error) {
                 console.log(error);
             }
@@ -463,6 +500,28 @@ const dnController = {
                         "DV_MaDV",
                         DV_MaDV
                     );
+                    for (let item of result) {
+                        const [ttsp] = await getByColumn(
+                            "san_pham",
+                            "SP_MaSP",
+                            item.SP_MaSP
+                        );
+                        item.SP_TenSanPham = ttsp.SP_TenSanPham;
+                        item.SP_AnhDaiDien = ttsp.SP_AnhDaiDien;
+                        const danhSach = item.SPGT_DanhSach.split(", ");
+                        let spgt = [];
+                        for (let ds of danhSach) {
+                            const [sp] = await getRowJoin(
+                                "san_pham",
+                                "gia_san_pham",
+                                "GSP_MaGSP",
+                                `SP_MaSP="${ds}"`
+                            );
+
+                            spgt.push(sp);
+                        }
+                        item.SPGT_DanhSach = spgt;
+                    }
                     return res.status(201).json({ status: true, result });
                 } else {
                     return res.status(403).json({

@@ -27,4 +27,5 @@ router.post("/order", verifyToken, dnController.orderProduct);
 router.get("/get-order", verifyToken, dnController.getOrder);
 router.put("/receive-order", verifyToken, dnController.receiveOrder);
 router.get("/get-intro", verifyToken, dnController.getIntro);
+router.put("/update-product", verifyToken, dnController.updateProduct);
 export default router;

@@ -35,6 +35,7 @@ export async function updateRows(table, valueUpdate, where) {
     const result = await pool.query(
         `UPDATE ${table} SET ${valueUpdate} where ${where}`
     );
+
     return result;
 }
 
@@ -56,6 +57,11 @@ export async function getRowJoins(table, infoJoin, where = "") {
             where ? `where ${table}.${where}` : ``
         }`
     );
+    // console.log(
+    //     `SELECT * FROM ${table} ${joinString.join(" ")} ${
+    //         where ? `where ${table}.${where}` : ``
+    //     }`
+    // );
     return row;
 }
 
@@ -69,4 +75,32 @@ export async function getAllJoins(type, table, fields, infoJoin) {
     );
 
     return row;
+}
+
+export async function countData(table, countField, where = "") {
+    const [number] = await pool.query(
+        `SELECT COUNT(${countField}) as CountValue from ${table} ${
+            where ? `where ${where}` : ""
+        }`
+    );
+    return number;
+}
+
+export async function getDataCustom(
+    preCondition = "",
+    selectCustom,
+    fromCustom,
+    conditionCustom
+) {
+    const [result] = await pool.query(
+        `${
+            preCondition ? `${preCondition};` : ""
+        }\nSELECT ${selectCustom} FROM ${fromCustom} ${conditionCustom}`
+    );
+    // console.log(
+    //     `${
+    //         preCondition ? `${preCondition};` : ""
+    //     }\nSELECT ${selectCustom} FROM ${fromCustom} ${conditionCustom}`
+    // );
+    return result;
 }
