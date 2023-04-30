@@ -1,7 +1,19 @@
-import React from "react";
-import { Link } from "react-router-dom";
-
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams } from "react-router-dom";
+import { updateCurrentAccount } from "../../../store/account/account-slice";
 const AccountDetail = () => {
+    const { accounts, currentAccount } = useSelector((state) => state.account);
+    const id = useParams().id;
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const currentAccount = accounts?.find(
+            (account) => account.ND_MaND === id
+        );
+        dispatch(updateCurrentAccount(currentAccount));
+    }, [accounts]);
+
     return (
         <div className="product-info relative z-0 h-[600px] animate__animated animate__fadeIn ">
             <div className="info-background h-3/4 pt-2">
@@ -34,7 +46,10 @@ const AccountDetail = () => {
                 <div className="flex justify-evenly [&>*]:my-auto h-full px-10 ">
                     <div className="info-img col-span-3   relative p-4 w-[300px] h-[300px] ">
                         <img
-                            src="https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80"
+                            src={
+                                currentAccount?.ND_AnhDaiDien ||
+                                "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                            }
                             alt=""
                             className="h-full w-full rounded-full object-cover"
                         />
@@ -44,50 +59,67 @@ const AccountDetail = () => {
                             <span className="font-bold col-span-5">
                                 Mã người dùng:
                             </span>
-                            <span className="col-span-7">ND_000001</span>
+                            <span className="col-span-7">
+                                {currentAccount?.ND_MaND}
+                            </span>
                         </p>
                         <p className="info-id text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Họ tên:
                             </span>
-                            <span className="col-span-7">Lê Duy Tân</span>
+                            <span className="col-span-7">
+                                {currentAccount?.ND_HoTen ||
+                                    "Người dùng chưa cập nhật"}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Loại người dùng:
                             </span>
-                            <span className="col-span-7">Quản lý HTX</span>
+                            <span className="col-span-7">
+                                {currentAccount?.LND_TenLoai}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Tài khoản:
                             </span>
-                            <span className="col-span-7">kynhucta</span>
+                            <span className="col-span-7">
+                                {currentAccount?.ND_TaiKhoan}
+                            </span>
                         </p>
                         <p className="info-id text-lg my-2">
                             <span className="font-bold col-span-5">Email:</span>
                             <span className="col-span-7">
-                                kynhucta@khth.com
+                                {currentAccount?.ND_Email ||
+                                    "Người dùng chưa cập nhật"}
                             </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Số điện thoại:
                             </span>
-                            <span className="col-span-7">09393837367</span>
+                            <span className="col-span-7">
+                                {currentAccount?.ND_DienThoai ||
+                                    "Người dùng chưa cập nhật"}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Cảnh báo:
                             </span>
-                            <span className="col-span-7">2</span>
+                            <span className="col-span-7">
+                                {currentAccount?.ND_CanhBao
+                                    ? currentAccount?.ND_CanhBao.split(" ")[0]
+                                    : 0}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-5">
                                 Ngày đăng ký:
                             </span>
                             <span className="col-span-7">
-                                10/03/2023, 20:17:03
+                                {currentAccount?.ND_NgayDangKy}
                             </span>
                         </p>
                         <div className="w-full text-center mt-6 ">

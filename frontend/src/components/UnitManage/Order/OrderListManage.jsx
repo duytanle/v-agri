@@ -13,13 +13,17 @@ const OrderListManage = ({ orderList, tab }) => {
             if (orderListByUnit.length === 0) {
                 orderListByUnit.push({ [item.DV_MaDV]: [item] });
             } else {
-                for (let i = 0; i < orderListByUnit.length; ++i) {
+                let i = 0;
+                for (i; i < orderListByUnit.length; ++i) {
+                    const keyCartItem = Object.keys(orderListByUnit[i])[0];
                     const value = orderListByUnit[i][item.DV_MaDV];
-                    if (value) {
+                    if (keyCartItem === item.DV_MaDV) {
                         orderListByUnit[i][item.DV_MaDV] = [...value, item];
-                    } else {
-                        orderListByUnit.push({ [item.DV_MaDV]: [item] });
+                        break;
                     }
+                }
+                if (i === orderListByUnit.length) {
+                    orderListByUnit.push({ [item.DV_MaDV]: [item] });
                 }
             }
         });
@@ -47,7 +51,7 @@ const OrderListManage = ({ orderList, tab }) => {
     }, [tab]);
     return (
         <div
-            className={`order-list-manage py-4 px-8 w-full h-full ${
+            className={`order-list-manage py-4 px-8 w-full h-[500px] ${
                 Object.keys(showDetail).length === 0 ? "overflow-y-scroll" : ""
             } `}
         >
@@ -63,7 +67,8 @@ const OrderListManage = ({ orderList, tab }) => {
                                                 src={
                                                     item[
                                                         Object.keys(item)[0]
-                                                    ][0].DV_Logo
+                                                    ][0].DV_Logo ||
+                                                    "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
                                                 }
                                                 alt=""
                                                 className="w-10 h-10 object-cover"

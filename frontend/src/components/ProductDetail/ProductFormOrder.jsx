@@ -167,6 +167,112 @@ const ProductFormOrder = ({ edit = false, dataEdit }) => {
                     }
                     break;
                 }
+                case "THOI_HAN": {
+                    if (command.value[0].includes(".")) {
+                        toast.error("Thời hạn phải là số nguyên", {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    } else {
+                        setValue("orderTime", command.value[0]);
+                        let checkTime = false;
+                        for (let i = 0; i < dropdownTimeData.length; ++i) {
+                            if (
+                                dropdownTimeData[i].value === command.value[1]
+                            ) {
+                                checkTime = true;
+                                break;
+                            }
+                        }
+                        if (checkTime) {
+                            setValue("orderTimeUnit", command.value[1]);
+                        } else {
+                            setValue("orderTimeUnit", "default");
+                            toast.warn("Đơn vị thời hạn không phù hợp", {
+                                position: "top-right",
+                                autoClose: 3000,
+                                hideProgressBar: false,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                theme: "colored",
+                            });
+                        }
+                    }
+
+                    break;
+                }
+                case "CHU_KY": {
+                    if (command.value[0].includes("_")) {
+                        toast.error("Chu kỳ phải là số nguyên", {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    } else {
+                        setValue("orderCycle", command.value[0]);
+                        let checkTime = false;
+                        for (let i = 0; i < dropdownTimeData.length; ++i) {
+                            if (
+                                dropdownTimeData[i].value === command.value[1]
+                            ) {
+                                checkTime = true;
+                                break;
+                            }
+                        }
+                        if (checkTime) {
+                            setValue("orderCycleUnit", command.value[1]);
+                        } else {
+                            setValue("orderCycleUnit", "default");
+                            toast.warn("Đơn vị chu kỳ không phù hợp", {
+                                position: "top-right",
+                                autoClose: 3000,
+                                hideProgressBar: false,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                theme: "colored",
+                            });
+                        }
+                    }
+
+                    break;
+                }
+                case "NGAY_NHAN": {
+                    const ngayNhan = new Date(command.value);
+                    if (ngayNhan < new Date()) {
+                        toast.error("Ngày nhận không nhỏ hơn hôm nay", {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    } else {
+                        setValue("startReceive", command.value);
+                    }
+                    break;
+                }
+                case "THEM_GIO_HANG": {
+                    handleSubmit(saveToCart)();
+                    break;
+                }
                 default: {
                     toast.warn("Không hiểu câu lệnh", {
                         position: "top-right",

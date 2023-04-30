@@ -88,6 +88,33 @@ const OrderDetail = ({ data, setShowDetail }) => {
             return `${soluong[0]} (${soluong[1]}) * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
         }
     };
+
+    const calculateNextShip =
+        data.CTDH_GiaoHang?.split(", ")[0] &&
+        data.CTDH_GiaoHang?.split(", ")[1] === "null"
+            ? parseInt(data.CTDH_GiaoHang?.split(", ")[0]) + 1
+            : 1;
+
+    const calculateNextDateShip = () => {
+        let numberCycle = data.CTDH_ChuKyNhan?.split(" ")[0];
+        let typeCycle = data.CTDH_ChuKyNhan?.split(" ")[1];
+        let totalDateAdd = numberCycle * calculateNextShip;
+        switch (typeCycle) {
+            case "ngày": {
+                break;
+            }
+            case "tháng": {
+                totalDateAdd *= 30;
+                break;
+            }
+            case "năm": {
+                totalDateAdd *= 365;
+            }
+        }
+        let result = new Date(data.CTDH_NgayNhan);
+        result.setDate(result.getDate() + totalDateAdd);
+        return result.toLocaleString("pt-PT").slice(0, 10);
+    };
     const handleHTXConfirm = () => {
         dispatch({
             type: "HTX_CONFIRM_ORDER",
@@ -322,18 +349,7 @@ const OrderDetail = ({ data, setShowDetail }) => {
                                     <div className="flex justify-between">
                                         <span>
                                             Giao hàng lần&nbsp;
-                                            {data.CTDH_GiaoHang?.split(
-                                                ", "
-                                            )[0] &&
-                                            data.CTDH_GiaoHang?.split(
-                                                ", "
-                                            )[1] === "null"
-                                                ? parseInt(
-                                                      data.CTDH_GiaoHang?.split(
-                                                          ", "
-                                                      )[0]
-                                                  ) + 1
-                                                : 1}
+                                            {calculateNextShip}
                                             :&nbsp;
                                         </span>
                                         <span>
@@ -341,7 +357,7 @@ const OrderDetail = ({ data, setShowDetail }) => {
                                                 ", "
                                             )[1] === "giao"
                                                 ? "Đã giao"
-                                                : "Đang chuẩn bị"}
+                                                : calculateNextDateShip()}
                                         </span>
                                     </div>
                                 ) : null}

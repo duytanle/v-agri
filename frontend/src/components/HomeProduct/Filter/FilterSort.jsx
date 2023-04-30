@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const FilterSort = ({ type }) => {
+const FilterSort = ({ type, ...props }) => {
     const [on, setOn] = useState(false);
-    const handleClickSort = (event) => {
+    const handleClickSort = () => {
         setOn(!on);
+        props.onHandleSort();
     };
     return (
         <div className={`sort-${type.value}`}>

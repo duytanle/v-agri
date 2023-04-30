@@ -58,39 +58,39 @@ const OrderItem = ({ edit = false, data, ...props }) => {
         const phanTram = data.KM_PhanTram;
         const phanTramString = phanTram ? `*${100 - phanTram} %` : ``;
         let price = 1;
-        if (product.GSP_DonViTinh !== soluong[1]) {
+        if (data.GSP_DonViTinh !== soluong[1]) {
             if (soluong[1] === "kg") {
                 price = (
-                    ((parseFloat(soluong[0]) * product.GSP_Gia) / 1000) *
+                    ((parseFloat(soluong[0]) * data.GSP_Gia) / 1000) *
                     times *
                     (phanTram ? (100 - phanTram) / 100 : 1)
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) / 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) / 1000 * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
             } else {
                 price = (
                     parseFloat(soluong[0]) *
-                    product.GSP_Gia *
+                    data.GSP_Gia *
                     1000 *
                     times *
                     (phanTram ? (100 - phanTram) / 100 : 1)
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) * 1000 * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) * 1000 * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
             }
         } else {
             price = (
                 parseFloat(soluong[0]) *
-                product.GSP_Gia *
+                data.GSP_Gia *
                 times *
                 (phanTram ? (100 - phanTram) / 100 : 1)
             )
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
 
-            return `${soluong[0]} (${soluong[1]}) * ${product.GSP_Gia}  (1 ${product.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+            return `${soluong[0]} (${soluong[1]}) * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
         }
     };
     useEffect(() => {
@@ -124,14 +124,14 @@ const OrderItem = ({ edit = false, data, ...props }) => {
             ) : null}
             <div className="product-img w-[100px] h-[100px] rounded-lg overflow-hidden">
                 <img
-                    src={product.SP_AnhDaiDien}
+                    src={data.SP_AnhDaiDien}
                     alt=""
                     className="w-full h-full object-cover"
                 />
             </div>
             <div className="product-info-order flex-1 relative">
                 <div className="name text-lg font-bold mb-2">
-                    {product.SP_TenSanPham}
+                    {data.SP_TenSanPham}
                 </div>
                 <div className="flex justify-between items-center">
                     <div className="">
@@ -140,8 +140,8 @@ const OrderItem = ({ edit = false, data, ...props }) => {
                                 Đơn giá:&nbsp;
                             </span>
                             <span className="price-number">
-                                {product.GSP_Gia}&nbsp;/&nbsp;
-                                {product.GSP_DonViTinh}
+                                {data.GSP_Gia}&nbsp;/&nbsp;
+                                {data.GSP_DonViTinh}
                             </span>
                         </div>
                         <div className="amount">
@@ -194,12 +194,12 @@ const OrderItem = ({ edit = false, data, ...props }) => {
                         >
                             <div className="grid grid-cols-12 relative">
                                 <div className="col-span-12 text-center font-bold text-3xl">
-                                    {product.SP_TenSanPham}
+                                    {data.SP_TenSanPham}
                                 </div>
                                 <div className="col-span-12 grid grid-cols-12 gap-4 pt-10">
                                     <div className="info-img col-span-4 relative p-4 w-full h-[280px] ">
                                         <img
-                                            src={product?.SP_AnhDaiDien}
+                                            src={data?.SP_AnhDaiDien}
                                             alt=""
                                             className="h-full w-full rounded-full object-cover"
                                         />
@@ -211,12 +211,12 @@ const OrderItem = ({ edit = false, data, ...props }) => {
                                                 dataEdit={{
                                                     ...data,
                                                     GSP_DonViTinh:
-                                                        product.GSP_DonViTinh,
+                                                        data.GSP_DonViTinh,
                                                     SP_SoLuongCungCau:
-                                                        product.SP_SoLuongCungCau.split(
+                                                        data.SP_SoLuongCungCau.split(
                                                             " "
                                                         )[1],
-                                                    SP_MaSP: product.SP_MaSP,
+                                                    SP_MaSP: data.SP_MaSP,
                                                 }}
                                             ></ProductFormOrder>
                                         </div>

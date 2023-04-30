@@ -3,8 +3,8 @@ export const requestGetCategory = () => {
     return axios.get("/common/get-category");
 };
 
-export const requestGetProducts = () => {
-    return axios.get("/common/get-products");
+export const requestGetProducts = (queryParams) => {
+    return axios.get(`/common/get-product-filter?${queryParams}`);
 };
 
 export const requestGetUnitDetail = (id) => {
@@ -25,4 +25,12 @@ export const requestHTXGetOrder = ({ token, DV_MaDV }) => {
         headers: { Authorization: `Bearer ${token}` },
         params: { DV_MaDV },
     });
+};
+
+export const requestGetUnitProduct = (id) => {
+    return axios.get(`/common/get-unit-product/${id}`);
+};
+
+export const requestGetProductDetail = (id) => {
+    return axios.get(`/common/get-product-detail/${id}`);
 };

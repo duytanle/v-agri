@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -6,12 +6,17 @@ import { useDispatch, useSelector } from "react-redux";
 import Input from "../../CustomForm/Input";
 import EmployeeAvatar from "../Employees/EmployeeAvatar";
 import Dropdown from "../../CustomForm/Dropdown";
-import { dnCreateProduct } from "../../../store/dn/dn-slice.js";
 import axios from "../../../api/axios";
+import {
+    dnCreateProduct,
+    dnUpdateManageProduct,
+} from "../../../store/dn/dn-slice.js";
+import { handleDNUpdateProduct } from "../../../store/dn/dn-handlers";
 const ProductFormDN = ({ handleCloseAdd }) => {
     //Redux
     const { category } = useSelector((state) => state.product);
     const { userUnit, accessToken } = useSelector((state) => state.auth);
+    const { manageProduct } = useSelector((state) => state.dn);
     const dispatch = useDispatch();
 
     //State
@@ -58,6 +63,16 @@ const ProductFormDN = ({ handleCloseAdd }) => {
         reset,
     } = useForm({
         mode: "onChange",
+        defaultValues: {
+            productName: manageProduct.SP_TenSanPham,
+            productCategory: manageProduct.DMSP_MaDMSP,
+            productAbility: manageProduct.SP_SoLuongCungCau?.split(" ")[0],
+            productAbilityUnit: manageProduct.SP_SoLuongCungCau?.split(" ")[1],
+            productTimeApply: manageProduct.SP_ChuKyCungCau?.split(" ")[0],
+            productTimeApplyUnit: manageProduct.SP_ChuKyCungCau?.split(" ")[1],
+            productDesc: manageProduct.SP_MoTa,
+            productImage: manageProduct.SP_AnhDaiDien,
+        },
         resolver: yupResolver(validationSchema),
     });
 
@@ -97,7 +112,7 @@ const ProductFormDN = ({ handleCloseAdd }) => {
         });
         setResetForm(!resetForm);
     };
-    const handleUpdate = async (values) => {
+    const handleCreate = async (values) => {
         if (!values.productImage) {
             setCheckImageProduct(true);
         } else {
@@ -130,6 +145,66 @@ const ProductFormDN = ({ handleCloseAdd }) => {
             handleResetForm();
         }
     };
+    const handleResetEdit = () => {
+        reset({
+            productName: manageProduct.SP_TenSanPham,
+            productCategory: manageProduct.DMSP_MaDMSP,
+            productAbility: manageProduct.SP_SoLuongCungCau?.split(" ")[0],
+            productAbilityUnit: manageProduct.SP_SoLuongCungCau?.split(" ")[1],
+            productTimeApply: manageProduct.SP_ChuKyCungCau?.split(" ")[0],
+            productTimeApplyUnit: manageProduct.SP_ChuKyCungCau?.split(" ")[1],
+            productDesc: manageProduct.SP_MoTa,
+            productImage: "default",
+        });
+    };
+    const handleUpdate = async (values) => {
+        let resUploadProductImage = "";
+        if (typeof values.productImage === "object") {
+            const uploadImage = new FormData();
+            uploadImage.append("image", values.productImage, "file");
+            resUploadProductImage = await axios.post(
+                "/dn/upload-image",
+                uploadImage,
+                {
+                    headers: {
+                        contentType: false,
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+        }
+        const data = {
+            DV_MaDV: manageProduct.DV_MaDV,
+            DMSP_MaDMSP: values.productCategory,
+            SP_TenSanPham: values.productName,
+            SP_SoLuongCungCau: `${values.productAbility} ${values.productAbilityUnit}`,
+            SP_ChuKyCungCau: `${values.productTimeApply} ${values.productTimeApplyUnit}`,
+            SP_AnhDaiDien: resUploadProductImage?.data?.path || "",
+            SP_MoTa: values.productDesc,
+        };
+        dispatch({
+            type: "DN_UPDATE_PRODUCT",
+            payload: {
+                token: accessToken,
+                data,
+            },
+        });
+    };
+
+    useEffect(() => {
+        setValue("productCategory", manageProduct.DMSP_MaDMSP);
+        setValue(
+            "productAbilityUnit",
+            manageProduct.SP_SoLuongCungCau?.split(" ")[1]
+        );
+        setValue(
+            "productTimeApplyUnit",
+            manageProduct.SP_ChuKyCungCau?.split(" ")[1]
+        );
+        return () => {
+            dispatch(dnUpdateManageProduct({ manageProduct: {} }));
+        };
+    }, []);
     return (
         <form className="manage-product-info mt-5 relative">
             <div className="manage-product-name text-center">
@@ -158,7 +233,10 @@ const ProductFormDN = ({ handleCloseAdd }) => {
                         customClass={`unit-logo col-span-4 h-[300px] w-[300px] shrink-0 p-4 ${
                             Object.keys(errors).length > 0 ? "mt-5" : "my-auto"
                         }`}
-                        defaultAvatar="https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                        defaultAvatar={
+                            manageProduct.SP_AnhDaiDien ||
+                            "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                        }
                         setCheckImageProduct={setCheckImageProduct}
                     >
                         <div className="mt-10">
@@ -305,27 +383,52 @@ const ProductFormDN = ({ handleCloseAdd }) => {
                             Object.keys(errors).length > 0 ? "-mt-5" : ""
                         }`}
                     >
-                        <button
-                            className="setting-unit-reset bg-secondary-color p-2 rounded-lg font-bold text-white min-w-[140px]"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                handleResetForm();
-                            }}
-                        >
-                            Đặt lại
-                        </button>
-                        <button
-                            className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white min-w-[120px]"
-                            onClick={handleSubmit(handleUpdate)}
-                        >
-                            Thêm sản phẩm
-                        </button>
+                        {Object.keys(manageProduct).length === 0 ? (
+                            <>
+                                <button
+                                    className="setting-unit-reset bg-secondary-color p-2 rounded-lg font-bold text-white min-w-[140px] hover:bg-hover-secColor"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        handleResetForm();
+                                    }}
+                                >
+                                    Đặt lại
+                                </button>
+                                <button
+                                    className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white min-w-[140px] hover:bg-hover-priColor"
+                                    onClick={handleSubmit(handleCreate)}
+                                >
+                                    Thêm sản phẩm
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className="setting-unit-reset bg-secondary-color p-2 rounded-lg font-bold text-white min-w-[140px] hover:bg-hover-secColor"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        handleResetEdit();
+                                    }}
+                                >
+                                    Đặt lại
+                                </button>
+                                <button
+                                    className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white min-w-[140px] hover:bg-hover-priColor"
+                                    onClick={handleSubmit(handleUpdate)}
+                                >
+                                    Lưu thay đổi
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
             <div
                 className="absolute -top-[50px] right-0 bg-secondary-color text-white flex justify-center items-center p-1 rounded-full w-10 h-10 font-bold text-lg hover:bg-hover-secColor cursor-pointer"
-                onClick={handleCloseAdd}
+                onClick={() => {
+                    handleCloseAdd();
+                    dispatch(dnUpdateManageProduct({ manageProduct: {} }));
+                }}
             >
                 <i className="fa-solid fa-xmark"></i>
             </div>

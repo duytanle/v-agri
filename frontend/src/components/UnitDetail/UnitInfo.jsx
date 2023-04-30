@@ -1,6 +1,8 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 const UnitInfo = () => {
+    const { detailUnit } = useSelector((state) => state.product);
     return (
         <div className="unit-info  relative z-0 ">
             <div className="info-background h-[450px]">
@@ -26,13 +28,13 @@ const UnitInfo = () => {
                 </div>
             </div>
             <div className="info-card h-[500px] absolute top-[125px] w-[90%] bg-white rounded-[35px] left-1/2 -translate-x-1/2 shadow-2xl grid grid-cols-11">
-                <div className="info-name font-bold col-span-12 text-4xl my-8 ml-8 text-red-700 ">
-                    HTX Nước mắm Tĩnh Gia Thanh Hóa
+                <div className="info-name font-bold col-span-12 text-4xl mt-8 mx-8 text-red-700 ">
+                    {detailUnit.DV_TenDonVi}
                 </div>
                 <div className="info-basic col-span-4 h-full my-auto pr-5 pl-8 flex flex-col justify-start items-start ">
                     <div className="info-amount text-lg my-2">
                         <span className="font-bold">Lĩnh vực hoạt động: </span>
-                        <span>Sản xuất nước mắm từ cá cơm</span>
+                        <span>{detailUnit.DV_LinhVuc}</span>
                     </div>
 
                     <div className="info-star text-lg my-2 flex gap-2 items-center">
@@ -69,7 +71,7 @@ const UnitInfo = () => {
                                     alt=""
                                     className="w-5 h-5 inline-block mr-3"
                                 />
-                                <span>0939393837</span>
+                                <span>{detailUnit.DV_DienThoai}</span>
                             </div>
                             <div className="email  flex items-center">
                                 <img
@@ -77,15 +79,17 @@ const UnitInfo = () => {
                                     alt=""
                                     className="w-5 h-5 inline-block mr-3"
                                 />
-                                <span>tinhgiathanhhoa@gmail.com</span>
+                                <span>{detailUnit.DV_Email}</span>
                             </div>
                         </div>
                     </div>
                     <div className="info-address text-lg my-2">
                         <span className="font-bold">Địa chỉ: </span>
                         <span>
-                            128, quốc lộ 61C, ấp Long Hội, xã Long Bình, huyện
-                            Vị Xuyên, tỉnh Hà Giang
+                            {detailUnit.DCCT_TenDiaChi},&nbsp;
+                            {detailUnit.XP_TenXaPhuong},&nbsp;
+                            {detailUnit.QH_TenQuanHuyen},&nbsp;
+                            {detailUnit.TT_TenTinhThanh}
                         </span>
                     </div>
                     <div className="flex justify-evenly items-center my-5 w-full text-lg">
@@ -104,25 +108,23 @@ const UnitInfo = () => {
                         </div>
                     </div>
                 </div>
-                <div className="info-img col-span-3 h-[80%]  relative p-4 w-full ">
+                <div className="info-img col-span-3 h-[90%]  relative p-4 w-full ">
                     <img
-                        src="https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80"
+                        src={
+                            detailUnit.DV_Logo ||
+                            "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                        }
                         alt=""
                         className="h-full w-full rounded-full object-cover"
                     />
                 </div>
                 <div className="info-basic col-span-4 h-full my-auto px-8 flex flex-col justify-start items-start ">
-                    <div className="info-desc text-lg indent-8 text-justify">
-                        HTX nước mắm tĩnh gia thanh hóa tham gia hoạt động sản
-                        xuất nước mắm và các sản phậm phụ trợ từ cá, cung cấp
-                        cho thị trường. Sản phẩm chủ lực của chúng tôi là nước
-                        mắm cá cơm với năng suất 1000 lít / tháng với chất lượng
-                        cáo. Các sản phẩm mà đơn vị cung cấp đều đạt các chuẩn
-                        kiểm định chất lượng và vệ sinh an toàn thực phẩm.
+                    <div className="info-desc h-[300px] text-lg indent-8 text-justify overflow-y-scroll pr-5">
+                        {detailUnit.DV_MoTa}
                     </div>
                     <div className="info-chat w-full text-center my-5">
                         <button className="outline-none p-3 border-2 rounded-lg bg-primary-color text-lg text-white font-bold hover:bg-hover-priColor">
-                            Nhắn tin
+                            Gửi thư
                         </button>
                     </div>
                 </div>

@@ -46,7 +46,6 @@ export const requestOrderProduct = ({ token, data }) => {
 
 export const requestReceive = ({ token, data }) => {
     if (!token) return;
-    console.log("data");
     return axios.put("/dn/receive-order", data, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -59,5 +58,14 @@ export const requestDNGetIntro = ({ token, ND_MaND, DV_MaDV }) => {
     return axios.get("/dn/get-intro", {
         headers: { Authorization: `Bearer ${token}` },
         params: { ND_MaND, DV_MaDV },
+    });
+};
+
+export const requestDNUpdateProduct = ({ token, data }) => {
+    if (!token) return;
+    return axios.put("/dn/update-product", data, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
 };

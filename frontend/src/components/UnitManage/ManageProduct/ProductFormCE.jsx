@@ -16,7 +16,7 @@ const ProductCE = ({
     resetForm,
     watch,
 }) => {
-    const { category } = useSelector((state) => state.product);
+    const { category, productDetail } = useSelector((state) => state.product);
     const [imageVerify, setImageVerify] = useState([]);
     const [fileImageVerify, setFileImageVerify] = useState([]);
     const [fileImageDesc, setFileImageDesc] = useState([]);
@@ -98,7 +98,16 @@ const ProductCE = ({
         });
         setImageVerify([...imageVerify, ...convertToArray]);
     };
-
+    useEffect(() => {
+        if (Object.keys(productDetail).length > 0) {
+            let image = productDetail.SP_AnhMoTa.split(", ").map(
+                (item, index) => {
+                    return { id: index, url: item };
+                }
+            );
+            setImageData(image);
+        }
+    }, []);
     useEffect(() => {
         if (imageData.length > 1) {
             imageData.map((image) => {
@@ -156,7 +165,11 @@ const ProductCE = ({
                                     ? "mt-5"
                                     : "my-auto"
                             }`}
-                            defaultAvatar="https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                            defaultAvatar={
+                                Object.keys(productDetail).length > 0
+                                    ? productDetail.SP_AnhDaiDien
+                                    : "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                            }
                             setCheckImageProduct={setCheckImageProduct}
                         ></EmployeeAvatar>
                         <div className=" mt-4">

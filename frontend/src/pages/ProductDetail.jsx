@@ -8,18 +8,17 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { productUpdateProductDetail } from "../store/products/product-slice";
 const ProductDetail = () => {
-    const { products } = useSelector((state) => state.product);
+    const { products, productDetail } = useSelector((state) => state.product);
     const { user, accessToken } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const idProduct = useParams().id;
-    const productDetail = products.find(({ SP_MaSP }) => SP_MaSP === idProduct);
+
     useEffect(() => {
-        dispatch(productUpdateProductDetail({ productDetail }));
         dispatch({
-            type: "COMMON_GET_UNIT_DETAIL",
-            payload: productDetail?.DV_MaDV,
+            type: "COMMON_GET_PRODUCT_DETAIL",
+            payload: idProduct,
         });
-    }, [products]);
+    }, []);
 
     return (
         <div className="h-screen pt-[80px] px-8">

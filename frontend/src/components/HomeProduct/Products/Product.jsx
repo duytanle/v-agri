@@ -39,7 +39,7 @@ const Product = ({ data, customProduct = "", onView, ...props }) => {
                 </div>
                 {data.LSP_MaLSP === "DN" ? (
                     <>
-                        <div className="product-demand flex justify-between text-[18px]">
+                        <div className="product-demand flex justify-between text-[16px]">
                             <div className="font-bold">Nhu cầu: </div>
                             <div className="flex gap-2 text-primary-color font-bold">
                                 <div className="product-number">
@@ -54,10 +54,10 @@ const Product = ({ data, customProduct = "", onView, ...props }) => {
                     </>
                 ) : (
                     <>
-                        <div className="product-price flex items-center justify-between mb-1">
+                        <div className="product-price flex items-center justify-between">
                             {data.KM_MAKM ? (
                                 <>
-                                    <div className="price-decrease  text-red-600 font-bold text-[18px]">
+                                    <div className="price-decrease  text-red-600 font-bold text-[16px]">
                                         <span>
                                             {(data.GSP_Gia * data.KM_PhanTram) /
                                                 100}

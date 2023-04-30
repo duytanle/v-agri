@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import ManageNav from "../components/UnitManage/ManageNav";
+import { useDispatch, useSelector } from "react-redux";
+import queryString from "query-string";
 const Admin = () => {
+    const { accessToken } = useSelector((state) => state.auth);
     const nav = [
         {
             id: 1,
@@ -29,6 +32,29 @@ const Admin = () => {
             name: "Thông báo",
         },
     ];
+    const [filters, setFilters] = useState({
+        search: "",
+        newAdd: false,
+        typeAccount: "all",
+    });
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch({ type: "QTV_GET_DASHBOARD", payload: accessToken });
+        dispatch({
+            type: "QTV_GET_ACCOUNTS",
+            payload: {
+                token: accessToken,
+                query: queryString.stringify(filters),
+            },
+        });
+        dispatch({
+            type: "QTV_GET_UNITS",
+            payload: {
+                token: accessToken,
+                query: queryString.stringify(filters),
+            },
+        });
+    }, []);
     return (
         <div className="unit-manage pt-[85px] h-[730px] px-8 grid grid-cols-6 gap-5 ">
             <div className="manage-nav col-span-1 px-2 py-2 rounded-2xl box-shadow-custom h-[655px]">

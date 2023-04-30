@@ -45,25 +45,25 @@ const AdPostDashboard = () => {
             <div className=" font-bold text-2xl ">Tổng quan</div>
             <div className="dashboard-number my-2 flex justify-evenly ">
                 <DashboardNumber
-                    iconClass="fa-solid fa-user"
+                    iconClass="fa-solid fa-newspaper"
                     number="30"
                     text="Bài đăng"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-check-to-slot"
                     number={3}
-                    text="Kiểm duyệt"
+                    text="Xác nhận chuẩn"
                 ></DashboardNumber>
                 <DashboardNumber
-                    iconClass="fa-solid fa-users-slash"
+                    iconClass="fa-solid fa-flag"
                     number={3}
-                    text="Vi phạm"
+                    text="Báo cáo"
                 ></DashboardNumber>
-                <DashboardNumber
+                {/* <DashboardNumber
                     iconClass="fa-solid fa-triangle-exclamation"
                     number={3}
                     text="Cảnh báo"
-                ></DashboardNumber>
+                ></DashboardNumber> */}
             </div>
             <div className="dashboard-chart grid grid-cols-2 h-[75%] mt-10">
                 <div className="chart-bar-order col-span-1  w-full h-[90%] mt-5 relative">

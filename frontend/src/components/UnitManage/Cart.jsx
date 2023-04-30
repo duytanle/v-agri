@@ -20,13 +20,17 @@ const Cart = () => {
             if (cartList.length === 0) {
                 cartList.push({ [item.DV_MaDV]: [item] });
             } else {
-                for (let i = 0; i < cartList.length; ++i) {
+                let i = 0;
+                for (i; i < cartList.length; ++i) {
+                    const keyCartItem = Object.keys(cartList[i])[0];
                     const value = cartList[i][item.DV_MaDV];
-                    if (value) {
+                    if (keyCartItem === item.DV_MaDV) {
                         cartList[i][item.DV_MaDV] = [...value, item];
-                    } else {
-                        cartList.push({ [item.DV_MaDV]: [item] });
+                        break;
                     }
+                }
+                if (i === cartList.length) {
+                    cartList.push({ [item.DV_MaDV]: [item] });
                 }
             }
         });
@@ -36,7 +40,7 @@ const Cart = () => {
         if (selectedItem.length === 0) {
             toast.error("Vui lòng chọn sản phẩm để đặt hàng", {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 3000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -87,15 +91,6 @@ const Cart = () => {
         <div className="manage-order h-full py-3 px-5 ">
             <div className=" font-bold text-2xl ">Quản lý giỏ hàng</div>
             <div className="info-products-order w-[90%] mx-auto h-[540px] p-3 overflow-y-scroll">
-                {/* {cart.map((item) => (
-                    <OrderItem
-                        edit={true}
-                        data={item}
-                        key={item.SP_MaSP}
-                        selectedItem={selectedItem}
-                        setSelectedItem={setSelectedItem}
-                    ></OrderItem>
-                ))} */}
                 {data().map((item, index) => {
                     return (
                         <Fragment key={index}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -7,10 +7,10 @@ import ProductFormCE from "./ProductFormCE";
 import { useDispatch, useSelector } from "react-redux";
 import { htxCreateProduct } from "../../../store/htx/htx-slice";
 import axios from "../../../api/axios";
-const ProductAdd = ({ handleCloseAdd }) => {
+const ProductCE = ({ handleCloseAdd, ...props }) => {
     const [checkImageProduct, setCheckImageProduct] = useState(false);
     const [resetForm, setResetForm] = useState(false);
-    const { category } = useSelector((state) => state.product);
+    const { category, productDetail } = useSelector((state) => state.product);
     const { accessToken, userUnit } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const validationSchema = yup.object({
@@ -68,7 +68,27 @@ const ProductAdd = ({ handleCloseAdd }) => {
             ),
         productDesc: yup.string().required("Vui lòng điền mô tả cho sản phẩm"),
     });
-
+    const checkEditProduct = () => {
+        if (Object.keys(productDetail).length > 0) {
+            return {
+                defaultValues: {
+                    productName: productDetail.SP_TenSanPham,
+                    productCategory: productDetail.DMSP_MaDMSP,
+                    productAbility:
+                        productDetail.SP_SoLuongCungCau.split(" ")[0],
+                    productAbilityUnit:
+                        productDetail.SP_SoLuongCungCau.split(" ")[1],
+                    productTimeApply:
+                        productDetail.SP_ChuKyCungCau.split(" ")[0],
+                    productTimeApplyUnit:
+                        productDetail.SP_ChuKyCungCau.split(" ")[1],
+                    productPrice: productDetail.GSP_Gia,
+                    productDesc: productDetail.SP_MoTa,
+                    productImage: productDetail.SP_AnhDaiDien,
+                },
+            };
+        } else return {};
+    };
     const {
         control,
         formState: { errors },
@@ -80,6 +100,7 @@ const ProductAdd = ({ handleCloseAdd }) => {
     } = useForm({
         mode: "onChange",
         resolver: yupResolver(validationSchema),
+        ...checkEditProduct(),
     });
     const handleResetForm = () => {
         reset({
@@ -172,6 +193,20 @@ const ProductAdd = ({ handleCloseAdd }) => {
             handleResetForm();
         }
     };
+    useEffect(() => {
+        if (Object.keys(productDetail).length > 0) {
+            setValue("productCategory", productDetail.DMSP_MaDMSP);
+            setValue(
+                "productAbilityUnit",
+                productDetail.SP_SoLuongCungCau.split(" ")[1]
+            );
+            setValue(
+                "productTimeApplyUnit",
+                productDetail.SP_ChuKyCungCau.split(" ")[1]
+            );
+            setValue("productPriceUnit", productDetail.GSP_DonViTinh);
+        }
+    }, [productDetail]);
     return (
         <form className="manage-product-add p-5 mt-5 box-shadow-custom rounded-xl relative">
             <div
@@ -181,7 +216,9 @@ const ProductAdd = ({ handleCloseAdd }) => {
                 <i className="fa-solid fa-xmark text-white font-bold"></i>
             </div>
             <div className="form-name font-bold text-2xl text-center">
-                Thêm sản phẩm mới
+                {Object.keys(productDetail).length > 0
+                    ? "Cập nhật thông tin sản phẩm"
+                    : " Thêm sản phẩm mới"}
             </div>
             <ProductFormCE
                 resetForm={resetForm}
@@ -218,4 +255,4 @@ const ProductAdd = ({ handleCloseAdd }) => {
     );
 };
 
-export default ProductAdd;
+export default ProductCE;

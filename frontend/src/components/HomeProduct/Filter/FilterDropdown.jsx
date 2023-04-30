@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import useClickOutSide from "../../../Hook/useClickOutSide";
-const FilterDropdown = ({ classDropdown = "", title, iconTitle, listData }) => {
+const FilterDropdown = ({
+    classDropdown = "",
+    title,
+    iconTitle,
+    listData,
+    ...props
+}) => {
     const [label, setLabel] = useState(title);
     const [show, setShow, nodeRef] = useClickOutSide();
     const handleClickItem = (event) => {
@@ -10,6 +16,7 @@ const FilterDropdown = ({ classDropdown = "", title, iconTitle, listData }) => {
         } else {
             setLabel(event.target.innerText);
         }
+        props.setFilters(itemValue);
     };
     return (
         <>

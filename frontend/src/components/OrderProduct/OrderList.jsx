@@ -21,13 +21,17 @@ const OrderList = ({ infoShip, setInfoShip }) => {
             if (orderList.length === 0) {
                 orderList.push({ [item.DV_MaDV]: [item] });
             } else {
-                for (let i = 0; i < orderList.length; ++i) {
+                let i = 0;
+                for (i; i < orderList.length; ++i) {
+                    const key = Object.keys(orderList[i])[0];
                     const value = orderList[i][item.DV_MaDV];
-                    if (value) {
+                    if (key === item.DV_MaDV) {
                         orderList[i][item.DV_MaDV] = [...value, item];
-                    } else {
-                        orderList.push({ [item.DV_MaDV]: [item] });
+                        break;
                     }
+                }
+                if (i === orderList.length) {
+                    orderList.push({ [item.DV_MaDV]: [item] });
                 }
             }
         });

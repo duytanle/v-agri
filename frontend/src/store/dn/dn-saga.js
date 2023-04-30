@@ -5,6 +5,7 @@ import {
     handleDNGetIntro,
     handleDNOrderProduct,
     handleDNReceiveOrder,
+    handleDNUpdateProduct,
     handleGetCart,
     handleUpdateCartItem,
 } from "./dn-handlers";
@@ -18,4 +19,5 @@ export default function* dnSaga() {
     yield takeLatest("ORDER_PRODUCT", handleDNOrderProduct);
     yield takeLatest("DN_RECEIVE_ORDER", handleDNReceiveOrder);
     yield takeLatest("DN_GET_INTRO", handleDNGetIntro);
+    yield takeLatest("DN_UPDATE_PRODUCT", handleDNUpdateProduct);
 }

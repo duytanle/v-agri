@@ -8,6 +8,7 @@ const dnSlice = createSlice({
         orderProduct: [],
         totalOrder: 0,
         intro: [],
+        manageProduct: {},
     },
 
     reducers: {
@@ -36,6 +37,10 @@ const dnSlice = createSlice({
             ...state,
             intro: action.payload.intro,
         }),
+        dnUpdateManageProduct: (state, action) => ({
+            ...state,
+            manageProduct: action.payload.manageProduct,
+        }),
     },
 });
 
@@ -47,5 +52,6 @@ export const {
     dnUpdateTotalOrder,
     dnClearTotalOrder,
     dnUpdateIntro,
+    dnUpdateManageProduct,
 } = dnSlice.actions;
 export default dnSlice.reducer;

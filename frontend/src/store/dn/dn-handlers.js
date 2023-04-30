@@ -4,6 +4,7 @@ import {
     requestAddToCart,
     requestCreateProduct,
     requestDNGetIntro,
+    requestDNUpdateProduct,
     requestGetCart,
     requestOrderProduct,
     requestReceive,
@@ -22,7 +23,7 @@ function* handleDNCreateProduct({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -41,7 +42,7 @@ function* handleAddToCart({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         } else {
             toast.error(response.data.message, {
@@ -52,7 +53,7 @@ function* handleAddToCart({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         }
     } catch (error) {
@@ -82,7 +83,7 @@ function* handleUpdateCartItem({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
             yield put(dnUpdateCartItem());
         }
@@ -95,7 +96,7 @@ function* handleUpdateCartItem({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     }
 }
@@ -111,7 +112,7 @@ function* handleDNOrderProduct({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         }
     } catch (error) {
@@ -133,7 +134,7 @@ function* handleGetOrder({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         }
     } catch (error) {
@@ -152,7 +153,7 @@ function* handleDNReceiveOrder({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -168,8 +169,28 @@ function* handleDNGetIntro({ payload }) {
         console.log(error);
     }
 }
+function* handleDNUpdateProduct({ payload }) {
+    try {
+        const response = yield call(requestDNUpdateProduct, payload);
+        if (response.data.status) {
+            toast.success(response.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
 export {
     handleDNCreateProduct,
+    handleDNUpdateProduct,
     handleAddToCart,
     handleGetCart,
     handleUpdateCartItem,

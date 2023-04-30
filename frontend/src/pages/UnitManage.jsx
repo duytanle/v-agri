@@ -75,17 +75,10 @@ const UnitManage = () => {
         },
     ];
     useEffect(() => {
-        if (user.LND_MaLND === "DN") {
-            dispatch({ type: "GET_CART", payload: accessToken });
-            dispatch({
-                type: "DN_GET_INTRO",
-                payload: {
-                    token: accessToken,
-                    DV_MaDV: userUnit.DV_MaDV,
-                    ND_MaND: user.ND_MaND,
-                },
-            });
-        }
+        dispatch({
+            type: "COMMON_GET_DASHBOARD",
+            payload: { token: accessToken, id: userUnit.DV_MaDV },
+        });
     }, []);
     return (
         <div className="unit-manage pt-[85px] h-[730px] px-8 grid grid-cols-6 gap-5 ">

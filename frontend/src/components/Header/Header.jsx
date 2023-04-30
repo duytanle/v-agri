@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import useClickOutSide from "../../Hook/useClickOutSide";
@@ -8,11 +8,24 @@ import ModalRegister from "../Portal/ModalRegister";
 import ModalRemind from "../Portal/ModalRemind";
 import HeaderEx from "./HeaderEx";
 const Header = ({ children }) => {
-    const [openModal, setOpenModal] = useState("");
     const [show, setShow, nodeRef] = useClickOutSide();
+
     const { user } = useSelector((state) => state.auth);
+    const { cart, intro } = useSelector((state) => state.dn);
+    const { announce } = useSelector((state) => state.common);
+    const [openModal, setOpenModal] = useState("");
+    const [listIntro, setListIntro] = useState([]);
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let listIntroTemp = [];
+        intro.map((item, index) =>
+            item.SPGT_DanhSach.map((item) => listIntroTemp.unshift(item))
+        );
+        setListIntro(listIntroTemp);
+    }, [intro]);
     return (
         <div className="header fixed z-50 h-[80px] w-full bg-white flex items-center px-8">
             <div className="header-logo h-full">
@@ -42,82 +55,132 @@ const Header = ({ children }) => {
                             <HeaderEx
                                 imgLink="/images/cart.png"
                                 imgDesc="shopping icon"
-                                number={3}
+                                number={cart.length}
                                 title="Sản phẩm mới thêm"
-                                footer="Còn 8 sản phẩm trong giỏ hàng"
+                                footer={`Còn ${
+                                    cart.length - 3 > 0 ? cart.length - 3 : 0
+                                } sản phẩm trong giỏ hàng`}
                                 button="Xem giỏ hàng"
                             >
-                                <div className="cart-item my-4 flex gap-3 cursor-pointer">
-                                    <div className="img h-12 w-12 border-2 border-primary-color rounded-md overflow-hidden shrink-0">
+                                {cart.length > 0 &&
+                                    cart
+                                        .slice(cart.length - 3)
+                                        .reverse()
+                                        .map((item, index) => {
+                                            return (
+                                                <div
+                                                    className="cart-item my-4 flex gap-3 cursor-pointer items-center"
+                                                    key={item.SP_MaSP}
+                                                >
+                                                    <div className="img h-12 w-12 border-2 border-primary-color rounded-md overflow-hidden shrink-0">
+                                                        <img
+                                                            src={
+                                                                item.SP_AnhDaiDien
+                                                            }
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="iem-info flex-1">
+                                                        <div className="item-name font-bold leading-4 ">
+                                                            {item.SP_TenSanPham}
+                                                        </div>
+                                                        <div className="num-price flex justify-between text-[14px] mt-2">
+                                                            <span className="number">
+                                                                {
+                                                                    item.SP_SoLuongCungCau
+                                                                }
+                                                                &nbsp;/&nbsp;tháng
+                                                            </span>
+                                                            <span className="price text-red-700">
+                                                                {item.GSP_Gia.toString().replace(
+                                                                    /(\d)(?=(\d\d\d)+(?!\d))/g,
+                                                                    "$1."
+                                                                )}
+                                                                đ &nbsp;/&nbsp;
+                                                                {
+                                                                    item.GSP_DonViTinh
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                {cart.length === 0 && (
+                                    <div className="empty w-full flex flex-col justify-center items-center gap-2">
                                         <img
-                                            src="https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80"
+                                            src="/images/empty-box.png"
                                             alt=""
-                                            className="w-full h-full object-cover"
+                                            className="w-[150px]"
                                         />
+                                        <p>
+                                            Chưa có sản phẩm nào trong giỏ hàng
+                                        </p>
                                     </div>
-                                    <div className="iem-info">
-                                        <div className="item-name font-bold leading-4 ">
-                                            Khóm cầu đúc sản xuất tại Cầu Đúc ăn
-                                            ngon bá cháy
-                                        </div>
-                                        <div className="num-price flex justify-between text-[14px]">
-                                            <span className="number">
-                                                150 kg / tháng
-                                            </span>
-                                            <span className="price text-red-700">
-                                                150.000đ / kg
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* <div className="empty w-full flex flex-col justify-center items-center gap-2">
-                        <img
-                            src="/images/empty-box.png"
-                            alt=""
-                            className="w-[150px]"
-                        />
-                        <p>Chưa có sản phẩm nào trong giỏ hàng</p>
-                    </div> */}
+                                )}
                             </HeaderEx>
                             <HeaderEx
                                 imgLink="/images/order.png"
                                 imgDesc="bill"
-                                number={3}
+                                number={listIntro.length}
                                 title="Các lời chào hàng mới"
-                                footer="Còn 5 lời chào hàng nữa"
+                                footer={`Còn ${
+                                    listIntro.length - 3 > 0
+                                        ? listIntro.length - 3
+                                        : 0
+                                } lời chào hàng nữa`}
                                 button="Xem tất cả"
                             >
-                                <div className="intro-item my-4 flex gap-3 cursor-pointer">
-                                    <div className="img h-12 w-12 border-2 border-primary-color rounded-md overflow-hidden shrink-0">
+                                {listIntro.length > 0 &&
+                                    listIntro.map((item, index) => (
+                                        <div
+                                            className="intro-item my-4 flex gap-3 cursor-pointer"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/chi_tiet_san_pham/${item.SP_MaSP}`
+                                                )
+                                            }
+                                            key={item.SP_MaSP + index}
+                                        >
+                                            <div className="img h-12 w-12 border-2 border-primary-color rounded-md overflow-hidden shrink-0">
+                                                <img
+                                                    src={item.SP_AnhDaiDien}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="iem-info flex-1">
+                                                <div className="item-name font-bold leading-4 ">
+                                                    {item.SP_TenSanPham}
+                                                </div>
+                                                <div className="num-price flex justify-between text-[14px]">
+                                                    <span className="number">
+                                                        {item.SP_SoLuongCungCau}
+                                                        &nbsp;/&nbsp;tháng
+                                                    </span>
+                                                    <span className="price text-red-700">
+                                                        {item.GSP_Gia.toString().replace(
+                                                            /(\d)(?=(\d\d\d)+(?!\d))/g,
+                                                            "$1."
+                                                        )}
+                                                        đ &nbsp;/&nbsp;
+                                                        {item.GSP_DonViTinh}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                {listIntro.length === 0 && (
+                                    <div className="empty w-full flex flex-col justify-center items-center gap-2">
                                         <img
-                                            src="https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80"
+                                            src="/images/empty-folder.png"
                                             alt=""
-                                            className="w-full h-full object-cover"
+                                            className="w-[150px]"
                                         />
+                                        <p>Chưa có lời chào hàng nào</p>
                                     </div>
-                                    <div className="iem-info">
-                                        <div className="item-name font-bold leading-4 ">
-                                            Khóm cầu đúc sản xuất tại Cầu Đúc ăn
-                                            ngon bá cháy
-                                        </div>
-                                        <div className="num-price flex justify-between text-[14px]">
-                                            <span className="number">
-                                                150 kg / tháng
-                                            </span>
-                                            <span className="price text-red-700">
-                                                150.000đ / kg
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* <div className="empty w-full flex flex-col justify-center items-center gap-2">
-                        <img
-                            src="/images/empty-folder.png"
-                            alt=""
-                            className="w-[150px]"
-                        />
-                        <p>Chưa có lời chào hàng nào</p>
-                    </div> */}
+                                )}
                             </HeaderEx>
                         </>
                     ) : null}
@@ -125,40 +188,46 @@ const Header = ({ children }) => {
                     <HeaderEx
                         imgLink="/images/bell.png"
                         imgDesc="bell"
-                        number={3}
+                        number={announce.length}
                         title="Các thông báo mới"
-                        footer="Còn 5 thông báo nữa"
+                        footer={`Còn ${
+                            announce.length > 3 ? announce.length - 3 : 0
+                        } thông báo nữa`}
                         button="Xem tất cả"
                     >
-                        <div className="message-item my-4 cursor-pointer">
-                            <p className="item-title font-bold leading-4 ">
-                                Chiều nay trúng sổ xổ mai nghỉ học
-                            </p>
-                            <p className="short-content leading-5 text-sm ml-3 text-justify  text-2-line">
-                                Lorem ipsum dolor sit amet consectetur
-                                adipisicing elit. Voluptatum aperiam dolorum
-                                omnis odit totam rerum id animi culpa vel. Magni
-                                fugit voluptates aut consectetur enim recusandae
-                                deleniti consequuntur obcaecati quod!
-                            </p>
-                        </div>
-                        {/* <div className="empty w-full flex flex-col justify-center items-center gap-2">
-                        <img
-                            src="/images/empty-bell.png"
-                            alt=""
-                            className="w-[150px]"
-                        />
-                        <p>Chưa có thông báo mới nào</p>
-                    </div> */}
+                        {announce.length > 0 &&
+                            announce.map((item, index) => (
+                                <div
+                                    className="message-item my-4 cursor-pointer"
+                                    key={index}
+                                >
+                                    <p className="item-title font-bold leading-4 ">
+                                        {item?.TB_TieuDe}
+                                    </p>
+                                    <p className="short-content leading-5 text-sm ml-3 text-justify  text-2-line">
+                                        {item?.TB_NoiDung}
+                                    </p>
+                                </div>
+                            ))}
+                        {announce.length === 0 && (
+                            <div className="empty w-full flex flex-col justify-center items-center gap-2">
+                                <img
+                                    src="/images/empty-bell.png"
+                                    alt=""
+                                    className="w-[150px]"
+                                />
+                                <p>Chưa có thông báo mới nào</p>
+                            </div>
+                        )}
                     </HeaderEx>
-                    <HeaderEx
+                    {/* <HeaderEx
                         imgLink="/images/chat.png"
                         imgDesc="chat icon"
                         number={3}
                         title="Các tin nhắn mới"
                         footer="Còn 5 tin nhắn nữa"
                         button="Xem tất cả"
-                    ></HeaderEx>
+                    ></HeaderEx> */}
                 </div>
             ) : null}
             <div className="header-profile ml-9 cursor-pointer flex gap-5">

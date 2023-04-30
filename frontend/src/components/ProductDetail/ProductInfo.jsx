@@ -1,20 +1,21 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ProductFormOrder from "./ProductFormOrder";
 import Modal from "../../components/Portal/Modal.jsx";
 import Product from "../HomeProduct/Products/Product";
+import queryString from "query-string";
 const ProductInfo = () => {
     const { user, userUnit, accessToken } = useSelector((state) => state.auth);
     const { products, productDetail } = useSelector((state) => state.product);
-    const { detailUnit } = useSelector((state) => state.product);
+
     const [modal, showModal] = useState(false);
     const [listIntro, setListIntro] = useState([]);
+
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const arraySP_Chuan = productDetail?.SP_Chuan?.split(", ") || [];
-    const userProduct = products.filter(
-        (item) => item.DV_MaDV === userUnit?.DV_MaDV
-    );
+
     const handleChoose = (event) => {
         if (event.target.checked) {
             setListIntro([...listIntro, event.target.id]);
@@ -25,8 +26,8 @@ const ProductInfo = () => {
             setListIntro(newList);
         }
     };
+
     const handleIntroProduct = () => {
-        console.log(listIntro);
         dispatch({
             type: "HTX_INTRO_PRODUCT",
             payload: {
@@ -43,6 +44,21 @@ const ProductInfo = () => {
         setListIntro([]);
         showModal(false);
     };
+    useEffect(() => {
+        dispatch({
+            type: "GET_PRODUCT",
+            payload: queryString.stringify({
+                search: "",
+                unitID: userUnit?.DV_MaDV,
+                type: user?.LND_MaLND === "HTX" ? "DN" : "HTX",
+                productNew: "",
+                productTop: false,
+                productStandard: "all",
+                productPrice: "",
+                category: "",
+            }),
+        });
+    }, []);
     return (
         <div className="product-info relative z-0 h-full">
             <div className="info-background h-2/3">
@@ -80,7 +96,7 @@ const ProductInfo = () => {
                         </p>
                         <p className="info-amount text-lg my-4">
                             <span className="font-bold">Đơn vị: </span>
-                            <span>{detailUnit?.DV_TenDonVi}</span>
+                            <span>{productDetail?.DV_TenDonVi}</span>
                         </p>
                         <p className="info-ability text-lg my-4">
                             <span className="font-bold">
@@ -167,34 +183,41 @@ const ProductInfo = () => {
                         </p>
                         <p className="info-amount text-lg my-2">
                             <span className="font-bold">Đơn vị: </span>
-                            <span>{detailUnit?.DV_TenDonVi}</span>
+                            <span>{productDetail?.DV_TenDonVi}</span>
                         </p>
                         <p className="info-amount text-lg my-2">
                             <span className="font-bold">Lĩnh vực: </span>
-                            <span>{detailUnit?.DV_LinhVuc}</span>
+                            <span>{productDetail?.DV_LinhVuc}</span>
                         </p>
                         <p className="info-amount text-lg my-2">
                             <span className="font-bold">Email: </span>
-                            <span>{detailUnit?.DV_Email}</span>
+                            <span>{productDetail?.DV_Email}</span>
                         </p>
                         <p className="info-amount text-lg my-2">
                             <span className="font-bold">Điện thoại: </span>
-                            <span>{detailUnit?.DV_DienThoai}</span>
+                            <span>{productDetail?.DV_DienThoai}</span>
                         </p>
                         <p className="info-amount text-lg my-2">
                             <span className="font-bold">Địa chỉ: </span>
                             <span>
-                                {detailUnit?.DCCT_TenDiaChi},&nbsp;
-                                {detailUnit?.XP_TenXaPhuong},&nbsp;
-                                {detailUnit.QH_TenQuanHuyen},&nbsp;
-                                {detailUnit.TT_TenTinhThanh}
+                                {productDetail?.DCCT_TenDiaChi},&nbsp;
+                                {productDetail?.XP_TenXaPhuong},&nbsp;
+                                {productDetail?.QH_TenQuanHuyen},&nbsp;
+                                {productDetail?.TT_TenTinhThanh}
                             </span>
                         </p>
                         <div className="w-full text-center mt-3 flex gap-5">
                             <div className=" min-w-[130px] mx-auto bg-primary-color rounded-lg py-2 px-5 text-white font-bold text-lg cursor-pointer hover:bg-hover-priColor">
                                 Trao đổi
                             </div>
-                            <div className=" w-max mx-auto bg-primary-color rounded-lg py-2 px-5 text-white font-bold text-lg cursor-pointer hover:bg-hover-priColor">
+                            <div
+                                className=" w-max mx-auto bg-primary-color rounded-lg py-2 px-5 text-white font-bold text-lg cursor-pointer hover:bg-hover-priColor"
+                                onClick={() =>
+                                    navigate(
+                                        `/don_vi/${productDetail?.DV_MaDV}`
+                                    )
+                                }
+                            >
                                 Xem đơn vị
                             </div>
                         </div>
@@ -245,7 +268,7 @@ const ProductInfo = () => {
                             Chọn sản phẩm tương ứng để chào hàng
                         </div>
                         <div className="flex gap-x-8 gap-y-1 mt-10 h-[75%] w-[85%] mx-auto overflow-x-scroll p-3">
-                            {userProduct.map((item, index) => (
+                            {products.map((item, index) => (
                                 <div
                                     className="flex flex-col gap-3 items-center justify-center"
                                     key={index}

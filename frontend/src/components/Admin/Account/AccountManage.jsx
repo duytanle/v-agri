@@ -1,18 +1,57 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FilterDropdown from "../../HomeProduct/Filter/FilterDropdown";
 import FilterSort from "../../HomeProduct/Filter/FilterSort";
 import AccountForm from "./AccountForm";
-
+import useDebounce from "../../../Hook/useDebounce";
+import queryString from "query-string";
+import { useDispatch, useSelector } from "react-redux";
 const AccountManage = () => {
+    const { accessToken } = useSelector((state) => state.auth);
+    const { accounts } = useSelector((state) => state.account);
+    const [addAccount, setAddAccount] = useState(false);
+
     const listData = [
         { name: "Tất cả", value: "all" },
         { name: "Hợp tác xã", value: "HTX" },
         { name: "Doanh nghiệp", value: "DN" },
         { name: "Nhân viên", value: "NV" },
-        { name: "Quản trị", value: "QT" },
+        { name: "Quản trị viên", value: "QTV" },
     ];
-    const [addAccount, setAddAccount] = useState(false);
+    const [filters, setFilters] = useState({
+        search: "",
+        newAdd: false,
+        typeAccount: "all",
+    });
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        totalPage: 1,
+    });
+    const totalPage = Math.ceil(pagination.totalRow / pagination.limit) || 1;
+    const [query, setQuery] = useState("");
+    const queryDebounce = useDebounce(query);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch({
+            type: "QTV_GET_ACCOUNTS",
+            payload: {
+                token: accessToken,
+                query: queryString.stringify(filters),
+            },
+        });
+    }, [filters]);
+    useEffect(() => {
+        setFilters((prev) => {
+            return {
+                ...prev,
+                search: queryDebounce,
+            };
+        });
+    }, [queryDebounce]);
+    useEffect(() => {
+        setPagination({ ...pagination, totalPage: accounts?.length });
+    }, [accounts]);
     return (
         <>
             {addAccount ? (
@@ -31,6 +70,9 @@ const AccountManage = () => {
                             <input
                                 type="text"
                                 className="outline-none flex-1 ml-2"
+                                onChange={(event) => {
+                                    setQuery(event.target.value);
+                                }}
                             />
                             <button className="outline-none bg-primary-color px-3 py-[1px] rounded-lg">
                                 <i className="fa-solid fa-magnifying-glass text-white font-bold text-sm"></i>
@@ -40,44 +82,103 @@ const AccountManage = () => {
                             <p className="sort-title">Sắp xếp theo: </p>
                             <FilterSort
                                 type={{ name: "Mới thêm", value: "new" }}
+                                onHandleSort={() =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        newAdd: !prev.newAdd,
+                                    }))
+                                }
                             ></FilterSort>
                             <FilterDropdown
                                 title="Loại tài khoản"
                                 iconTitle="fa-solid fa-chevron-down text-primary-color"
                                 listData={listData}
+                                setFilters={(value) => {
+                                    setFilters((prev) => {
+                                        return {
+                                            ...prev,
+                                            typeAccount: value,
+                                        };
+                                    });
+                                }}
                             ></FilterDropdown>
-                        </div>
-                        <div
-                            className="tool-add w-10 h-10 p-2 bg-primary-color flex items-center justify-center rounded-full text-white cursor-pointer hover:bg-hover-priColor"
-                            onClick={() => {
-                                setAddAccount(true);
-                            }}
-                        >
-                            <i className="fa-solid fa-plus"></i>
+                            <div
+                                className="tool-add w-10 h-10 p-2 bg-primary-color flex items-center justify-center rounded-full text-white cursor-pointer hover:bg-hover-priColor"
+                                onClick={() => {
+                                    setAddAccount(true);
+                                }}
+                            >
+                                <i className="fa-solid fa-plus"></i>
+                            </div>
+                            <div className="tool-page flex items-center p-1">
+                                <button
+                                    className="px-2 py-1 border-2 border-primary-color rounded-xl h-full"
+                                    disabled={pagination.page === 1}
+                                    onClick={() => {
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            page: pagination.page - 1,
+                                        }));
+                                    }}
+                                >
+                                    <i className="fa-solid fa-angle-left text-primary-color"></i>
+                                </button>
+                                <span className="mx-2">
+                                    {pagination.page} / {totalPage}
+                                </span>
+                                <button
+                                    className="px-2 py-1 border-2 border-primary-color rounded-xl h-full"
+                                    disabled={pagination.page === totalPage}
+                                    onClick={() => {
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            page: pagination.page - 1,
+                                        }));
+                                    }}
+                                >
+                                    <i className="fa-solid fa-angle-right text-primary-color"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div className="account-list grid grid-cols-10  gap-4 h-[500px] overflow-y-scroll p-2">
-                        <Link
-                            to="/tai_khoan/chi_tiet/09"
-                            className="account col-span-2  rounded-lg box-shadow-custom  cursor-pointer overflow-hidden h-[235px]"
-                        >
-                            <div className="account-avatar h-[75%]">
-                                <img
-                                    src="https://images.unsplash.com/photo-1677264547596-dd003a4c7921?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                            <div className="account-info py-[2px] px-1 text-center">
-                                <div className="account-info--header font-bold text-lg">
-                                    Lê Duy Tân
-                                </div>
-                                <div className="account-info-footer flex justify-between px-2">
-                                    <span>ND_000001</span>
-                                    <span>HTX</span>
-                                </div>
-                            </div>
-                        </Link>
+                    <div className="account-list grid grid-cols-10 gap-4 p-2">
+                        {accounts?.length > 0
+                            ? accounts
+                                  .slice(
+                                      pagination.page * 10 - 10,
+                                      pagination.page * 10
+                                  )
+                                  .map((account, index) => (
+                                      <Link
+                                          to={`/tai_khoan/chi_tiet/${account.ND_MaND}`}
+                                          className="account col-span-2  rounded-lg box-shadow-custom  cursor-pointer overflow-hidden h-[235px]"
+                                          key={account.ND_MaND}
+                                      >
+                                          <div className="account-avatar h-[75%]">
+                                              <img
+                                                  src={
+                                                      account.ND_AnhDaiDien ||
+                                                      "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                                                  }
+                                                  alt=""
+                                                  className="h-full w-full object-cover"
+                                              />
+                                          </div>
+                                          <div className="account-info py-[2px] px-1 text-center">
+                                              <div className="account-info--header font-bold text-lg">
+                                                  {account.ND_HoTen ||
+                                                      "Chưa cập nhật"}
+                                              </div>
+                                              <div className="account-info-footer flex justify-between px-2">
+                                                  <span>{account.ND_MaND}</span>
+                                                  <span>
+                                                      {account.LND_MaLND}
+                                                  </span>
+                                              </div>
+                                          </div>
+                                      </Link>
+                                  ))
+                            : null}
                     </div>
                 </>
             )}

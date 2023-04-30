@@ -6,8 +6,15 @@ import {
     productUpdateCurrentProducts,
     productUpdateProductDetail,
 } from "../../store/products/product-slice";
+import { dnUpdateManageProduct } from "../../store/dn/dn-slice";
 
-const Products = ({ customProducts = "", customProduct = "" }) => {
+const Products = ({
+    customProducts = "",
+    customProduct = "",
+    customTSP = "",
+    pagination,
+    ...props
+}) => {
     const standards = [
         { id: "OCOP", name: "OCOP" },
         { id: "VG", name: "VietGAP" },
@@ -18,27 +25,35 @@ const Products = ({ customProducts = "", customProduct = "" }) => {
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const viewProductDetail = (data) => {
-        navigate(`/chi_tiet_san_pham/${data.SP_MaSP}`);
-    };
 
+    const handleViewEdit = (data) => {
+        if (props?.onView) {
+            props.onView();
+            dispatch(productUpdateProductDetail({ productDetail: data }));
+        } else {
+            navigate(`/chi_tiet_san_pham/${data.SP_MaSP}`);
+        }
+    };
     return (
         <div
             className={`products grid mt-7 ${
                 customProducts ? customProducts : "grid-cols-5 gap-6 "
             }`}
         >
-            {currentProducts?.map((data) => (
-                <Product
-                    standards={standards}
-                    customProduct={customProduct}
-                    data={data}
-                    onView={() => {
-                        viewProductDetail(data);
-                    }}
-                    key={data.SP_MaSP}
-                ></Product>
-            ))}
+            {products
+                .slice(pagination.page * 10 - 10, pagination.page * 10)
+                ?.map((data) => (
+                    <Product
+                        standards={standards}
+                        customProduct={customProduct}
+                        data={data}
+                        customTSP={customTSP}
+                        onView={() => {
+                            handleViewEdit(data);
+                        }}
+                        key={data.SP_MaSP}
+                    ></Product>
+                ))}
         </div>
     );
 };

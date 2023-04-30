@@ -1,26 +1,28 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import ProductDescSlider from "../../ProductDetail/ProductDescSlider";
+import { useDispatch, useSelector } from "react-redux";
+import { updateCurrentUnit } from "../../../store/account/account-slice";
 
 const VerifyDetail = () => {
-    const imageData = [
+    const { units, currentUnit } = useSelector((state) => state.account);
+    const id = useParams().id;
+    const dispatch = useDispatch();
+    const imageData = currentUnit?.DV_MinhChung?.split(", ").map(
+        (link, index) => ({ id: index, url: link })
+    ) || [
         {
-            id: 1,
-            url: "https://thanhlapdoanhnghiepvn.vn/Uploads/images/dang-ky-giay-phep-kinh-doanh-doanh-nghiep(1).jpg",
-        },
-        {
-            id: 2,
-            url: "https://viettinlaw.com/wp-content/uploads/2013/07/gcndkkd.jpg",
-        },
-        {
-            id: 3,
-            url: "https://images.unsplash.com/photo-1546548970-71785318a17b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8ZnJ1aXRzfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-        },
-        {
-            id: 4,
-            url: "https://images.unsplash.com/photo-1573246123716-6b1782bfc499?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTV8fGZydWl0c3xlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
+            id: 0,
+            url: "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png",
         },
     ];
+
+    const handleVerifyUnit = () => {};
+    useEffect(() => {
+        const currentUnit = units?.find((unit) => unit.DV_MaDV === id);
+        dispatch(updateCurrentUnit(currentUnit));
+    }, [units]);
+
     return (
         <div className="product-info relative z-0 h-full animate__animated animate__fadeIn ">
             <div className="info-background h-[1570px] pt-2">
@@ -53,7 +55,10 @@ const VerifyDetail = () => {
                 <div className="flex gap-[50px] [&>*]:my-auto h-full px-10 ">
                     <div className="info-img col-span-3 relative p-4 w-[300px] h-[300px] flex-shrink-0">
                         <img
-                            src="https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80"
+                            src={
+                                currentUnit?.DV_Logo ||
+                                "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                            }
                             alt=""
                             className="h-full w-full rounded-full object-cover"
                         />
@@ -63,73 +68,76 @@ const VerifyDetail = () => {
                             <span className="font-bold col-span-3">
                                 Mã đơn vị:
                             </span>
-                            <span className="col-span-9">DV_000001</span>
+                            <span className="col-span-9">
+                                {currentUnit?.DV_MaDV}
+                            </span>
                         </p>
                         <p className="info-id text-lg my-2">
                             <span className="font-bold col-span-3">
                                 Tên đơn vị:
                             </span>
                             <span className="col-span-9">
-                                Hợp tác xã Kỳ Như
+                                {currentUnit?.DV_TenDonVi}
                             </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-3">
                                 Loại đơn vị:
                             </span>
-                            <span className="col-span-9">Hợp tác xã</span>
+                            <span className="col-span-9">
+                                {currentUnit?.LDV_TenLoai}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-3">
                                 Lĩnh vực:
                             </span>
                             <span className="col-span-9">
-                                Nuôi trông và chế biến cá thát lát
+                                {currentUnit?.DV_LinhVuc}
                             </span>
                         </p>
                         <p className="info-id text-lg my-2">
                             <span className="font-bold col-span-3">Email:</span>
                             <span className="col-span-9">
-                                kynhucta@khth.com
+                                {currentUnit?.DV_Email}
                             </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-3">
                                 Số điện thoại:
                             </span>
-                            <span className="col-span-9">09393837367</span>
+                            <span className="col-span-9">
+                                {currentUnit?.DV_DienThoai}
+                            </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-3">
                                 Địa chỉ:
                             </span>
                             <span className="col-span-9">
-                                Số 123, ấp Nhất, xã Thạnh Hòa, huyện Phụng Hiệp,
-                                tỉnh Hậu Giang
+                                {`${currentUnit?.DCCT_TenDiaChi}, ${currentUnit?.XP_TenXaPhuong}, ${currentUnit?.QH_TenQuanHuyen}, ${currentUnit?.TT_TenTinhThanh}`}
                             </span>
                         </p>
                         <p className="info-type text-lg my-2">
                             <span className="font-bold col-span-3">
-                                Ngày đăng ký:
+                                Xác minh:
                             </span>
                             <span className="col-span-9">
-                                10/03/2023, 20:17:03
+                                {currentUnit?.DV_XacMinh
+                                    ? "Đã xác minh"
+                                    : "Chưa xác minh"}
                             </span>
                         </p>
                     </div>
                 </div>
-                <div className="info-desc-verify flex gap-[50px] px-10 pt-5 items-start">
-                    <div className="info-desc my-2">
+                <div className="info-desc-verify grid grid-cols-11 gap-5 px-10 pt-5 items-start">
+                    <div className="info-desc my-2 col-span-4">
                         <p className="text-lg font-bold">Mô tả:</p>
-                        <div className="mt-2">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Reiciendis, rerum, officia illum possimus
-                            obcaecati alias minima eaque facilis voluptas totam
-                            molestiae, autem odio inventore quisquam adipisci
-                            error ratione quos voluptatum!
+                        <div className="mt-2 text-justify">
+                            {currentUnit?.DV_MoTa}
                         </div>
                     </div>
-                    <div className="info-verify my-2">
+                    <div className="info-verify my-2 col-span-7">
                         <p className="text-lg font-bold">Ảnh minh chứng:</p>
                         <ProductDescSlider
                             imageData={imageData}
@@ -139,12 +147,20 @@ const VerifyDetail = () => {
                 </div>
                 <div className="info-desc-verify px-10 mt-[40px] items-start w-full">
                     <div className="mx-auto flex justify-center gap-[50px]">
-                        <div className="p-2 min-w-[165px] bg-secondary-color rounded-lg font-bold text-white text-lg text-center cursor-pointer hover:bg-hover-secColor">
+                        <button className="p-2 min-w-[165px] bg-secondary-color rounded-lg font-bold text-white text-lg text-center cursor-pointer hover:bg-hover-secColor">
                             Yêu cầu thông tin
-                        </div>
-                        <div className="p-2 min-w-[165px] bg-primary-color rounded-lg font-bold text-white text-lg text-center cursor-pointer hover:bg-hover-priColor">
-                            Xác thực đơn vị
-                        </div>
+                        </button>
+                        <button
+                            className={`p-2 min-w-[165px] bg-primary-color rounded-lg font-bold text-white text-lg text-center  ${
+                                currentUnit?.DV_XacMinh
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : "cursor-pointer hover:bg-hover-priColor"
+                            }`}
+                            disabled={currentUnit?.DV_XacMinh}
+                            onClick={handleVerifyUnit}
+                        >
+                            Xác minh
+                        </button>
                     </div>
                 </div>
             </div>

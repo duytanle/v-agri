@@ -68,7 +68,7 @@ const OrderDetail = lazy(() =>
 const Cart = lazy(() => import("./components/UnitManage/Cart.jsx"));
 const Intro = lazy(() => import("./components/UnitManage/Intro.jsx"));
 function App() {
-    const { user, accessToken } = useSelector((state) => state.auth);
+    const { user, userUnit, accessToken } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.product);
     const dispatch = useDispatch();
     useEffect(() => {
@@ -80,6 +80,10 @@ function App() {
                     accessToken: access_token,
                 })
             );
+            dispatch({
+                type: "COMMON_GET_ANNOUNCE",
+                payload: { id: user.ND_MaND, token: accessToken },
+            });
             if (user.LND_MaLND === "HTX" || user.LND_MaLND === "DN") {
                 dispatch(authGetUserUnit(accessToken));
             }
@@ -95,29 +99,42 @@ function App() {
         }
     }, [user, dispatch]);
     useEffect(() => {
+        if (userUnit && user?.LND_MaLND === "DN") {
+            dispatch({ type: "GET_CART", payload: accessToken });
+            dispatch({
+                type: "DN_GET_INTRO",
+                payload: {
+                    token: accessToken,
+                    DV_MaDV: userUnit?.DV_MaDV,
+                    ND_MaND: user?.ND_MaND,
+                },
+            });
+        }
+    }, [userUnit]);
+    useEffect(() => {
         dispatch(addressGet());
         dispatch(productGetCategory());
-        dispatch(productGetProducts());
+        // dispatch(productGetProducts());
     }, []);
-    useEffect(() => {
-        if (user?.LND_MaLND === "HTX" || user?.LND_MaLND === "DN") {
-            const filterProduct = products?.filter((product) => {
-                if (user?.LND_MaLND === "HTX")
-                    return product.LSP_MaLSP === "DN";
-                else return product.LSP_MaLSP === "HTX";
-            });
-            dispatch(
-                productUpdateCurrentProducts({ currentProducts: filterProduct })
-            );
-            if (user?.LND_MaLND === "DN") {
-                dispatch({ type: "GET_CART", payload: accessToken });
-            }
-        } else {
-            dispatch(
-                productUpdateCurrentProducts({ currentProducts: products })
-            );
-        }
-    }, [products, user]);
+    // useEffect(() => {
+    //     if (user?.LND_MaLND === "HTX" || user?.LND_MaLND === "DN") {
+    //         const filterProduct = products?.filter((product) => {
+    //             if (user?.LND_MaLND === "HTX")
+    //                 return product.LSP_MaLSP === "DN";
+    //             else return product.LSP_MaLSP === "HTX";
+    //         });
+    //         dispatch(
+    //             productUpdateCurrentProducts({ currentProducts: filterProduct })
+    //         );
+    //         if (user?.LND_MaLND === "DN") {
+    //             dispatch({ type: "GET_CART", payload: accessToken });
+    //         }
+    //     } else {
+    //         dispatch(
+    //             productUpdateCurrentProducts({ currentProducts: products })
+    //         );
+    //     }
+    // }, [products, user]);
     const checkUserType = () => {
         let renderCPN = <HomeProduct />;
         if (user) {
