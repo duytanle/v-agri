@@ -52,51 +52,81 @@ const OrderItem = ({ edit = false, data, ...props }) => {
             }
         }
     };
+    const checkKM = () => {
+        if (!data.KM_MaKM) {
+            return 1;
+        } else {
+            const startDate = data.KM_NgayBatDau?.split("/") || "";
+            const newStartDate = new Date(
+                startDate[1] + "/" + startDate[0] + "/" + startDate[2]
+            );
+            const endDate = data.KM_NgayKetThuc?.split("/") || "";
+            const newEndDate = new Date(
+                endDate[1] + "/" + endDate[0] + "/" + endDate[2]
+            );
+            if (newStartDate <= new Date() && new Date() <= newEndDate) {
+                return data.KM_PhanTram ? (100 - data.KM_PhanTram) / 100 : 1;
+            } else {
+                return 1;
+            }
+        }
+    };
     const calculatePrice = () => {
         const times = Math.floor(timesReceiving());
         const soluong = data.GH_SoLuong.split(" ");
         const phanTram = data.KM_PhanTram;
-        const phanTramString = phanTram ? `*${100 - phanTram} %` : ``;
+        const phanTramString = phanTram ? ` * ${100 - phanTram}%` : ``;
         let price = 1;
         if (data.GSP_DonViTinh !== soluong[1]) {
             if (soluong[1] === "kg") {
                 price = (
                     ((parseFloat(soluong[0]) * data.GSP_Gia) / 1000) *
                     times *
-                    (phanTram ? (100 - phanTram) / 100 : 1)
+                    checkKM()
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) / 1000 * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) / 1000 * ${
+                    data.GSP_Gia
+                }  (1 ${data.GSP_DonViTinh})  ${
+                    checkKM() === 1 ? "" : `${phanTramString}`
+                } * ${times} (số lần nhận) = ${price} đồng`;
             } else {
                 price = (
                     parseFloat(soluong[0]) *
                     data.GSP_Gia *
                     1000 *
                     times *
-                    (phanTram ? (100 - phanTram) / 100 : 1)
+                    checkKM()
                 )
                     .toString()
                     .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
-                return `${soluong[0]} (${soluong[1]}) * 1000 * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+                return `${soluong[0]} (${soluong[1]}) * 1000 * ${
+                    data.GSP_Gia
+                }  ${
+                    checkKM() === 1 ? "" : `${phanTramString}`
+                } * ${times} (số lần nhận) = ${price} đồng`;
             }
         } else {
-            price = (
-                parseFloat(soluong[0]) *
-                data.GSP_Gia *
-                times *
-                (phanTram ? (100 - phanTram) / 100 : 1)
-            )
+            price = (parseFloat(soluong[0]) * data.GSP_Gia * times * checkKM())
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.");
 
-            return `${soluong[0]} (${soluong[1]}) * ${data.GSP_Gia}  (1 ${data.GSP_DonViTinh}) ${phanTramString} * ${times} (số lần nhận) = ${price} đồng`;
+            return `${soluong[0]} (${soluong[1]}) * ${data.GSP_Gia}  (1 ${
+                data.GSP_DonViTinh
+            })  ${
+                checkKM() === 1 ? "" : `${phanTramString}`
+            } * ${times} (số lần nhận) = ${price} đồng`;
         }
     };
     useEffect(() => {
         if (props.type === "order") {
             const price = calculatePrice().split(" ");
             const total = price[price.length - 2].replaceAll(".", "");
+            props.setOrderPrice((prev) => [...prev, parseInt(total)]);
+            props.setPayPrice(
+                (prev) => prev + Math.ceil(parseInt(total) / timesReceiving())
+            );
             dispatch(dnUpdateTotalOrder(parseInt(total)));
         }
     }, []);

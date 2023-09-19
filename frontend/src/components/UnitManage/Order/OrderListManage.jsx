@@ -29,6 +29,7 @@ const OrderListManage = ({ orderList, tab }) => {
         });
         return orderListByUnit;
     };
+
     const handleShowDetail = (data) => {
         setShowDetail(data);
     };

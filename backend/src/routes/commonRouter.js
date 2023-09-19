@@ -11,4 +11,7 @@ router.get("/get-product-detail/:id", commonController.getProductDetail);
 router.get("/get-dashboard/:id", verifyToken, commonController.getDashBoard);
 router.get("/get-product-filter", commonController.getProductFilter);
 router.get("/get-announce/:id", verifyToken, commonController.getAnnounce);
+router.get("/get-product-assess", commonController.getProductAssess);
+router.get("/get-unit-assess", commonController.getUnitAssess);
+router.post("/request-cancel", commonController.requestCancel);
 export default router;

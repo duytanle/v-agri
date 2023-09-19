@@ -7,10 +7,10 @@ import {
     dnUpdateOrderProduct,
 } from "../../store/dn/dn-slice";
 import OrderItem from "../OrderProduct/OrderItem";
-
+import axios from "../../api/axios";
 const Cart = () => {
     const { cart, updateCartItem } = useSelector((state) => state.dn);
-    const { accessToken } = useSelector((state) => state.auth);
+    const { accessToken, userUnit } = useSelector((state) => state.auth);
     const [selectedItem, setSelectedItem] = useState([]);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -81,6 +81,42 @@ const Cart = () => {
             }
         }
     };
+    const handleDelete = async () => {
+        if (selectedItem.length === 0) {
+            toast.error("Vui lòng chọn sản phẩm để xóa", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+        } else {
+            const res = await axios.post(
+                "/dn/delete-order",
+                { sp: selectedItem, DN_MaQL: userUnit.DN_MaQL },
+                {
+                    headers: {
+                        contentType: false,
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+            toast.success(res.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+            dispatch({ type: "GET_CART", payload: accessToken });
+        }
+    };
     useEffect(() => {
         dispatch({ type: "GET_CART", payload: accessToken });
     }, [updateCartItem]);
@@ -125,7 +161,10 @@ const Cart = () => {
                 })}
             </div>
             <div className="w-full flex justify-center gap-10">
-                <div className="bg-secondary-color px-4 py-2 rounded-lg font-bold text-lg text-center text-white hover:bg-hover-secColor cursor-pointer">
+                <div
+                    className="bg-secondary-color px-4 py-2 rounded-lg font-bold text-lg text-center text-white hover:bg-hover-secColor cursor-pointer"
+                    onClick={handleDelete}
+                >
                     Xóa sản phẩm
                 </div>
                 <div

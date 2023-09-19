@@ -8,7 +8,9 @@ import queryString from "query-string";
 const ProductInfo = () => {
     const { user, userUnit, accessToken } = useSelector((state) => state.auth);
     const { products, productDetail } = useSelector((state) => state.product);
-
+    const { assess } = useSelector((state) => state.common);
+    const numStar = assess?.tb || 0;
+    const star = Array(5).fill(0);
     const [modal, showModal] = useState(false);
     const [listIntro, setListIntro] = useState([]);
 
@@ -24,6 +26,22 @@ const ProductInfo = () => {
             const indexIntro = newList.indexOf(event.target.id);
             newList.splice(indexIntro, 1);
             setListIntro(newList);
+        }
+    };
+
+    const checkKM = () => {
+        if (!productDetail?.KM_MaKM) {
+            return false;
+        } else {
+            const startDate = productDetail?.KM_NgayBatDau?.split("/") || "";
+            const newStartDate = new Date(
+                startDate[1] + "/" + startDate[0] + "/" + startDate[2]
+            );
+            const endDate = productDetail?.KM_NgayKetThuc?.split("/") || "";
+            const newEndDate = new Date(
+                endDate[1] + "/" + endDate[0] + "/" + endDate[2]
+            );
+            return newStartDate <= new Date() && new Date() <= newEndDate;
         }
     };
 
@@ -49,8 +67,8 @@ const ProductInfo = () => {
             type: "GET_PRODUCT",
             payload: queryString.stringify({
                 search: "",
-                unitID: userUnit?.DV_MaDV,
-                type: user?.LND_MaLND === "HTX" ? "DN" : "HTX",
+                unitID: userUnit.DV_MaDV,
+                type: user ? (user.LND_MaLND === "HTX" ? "DN" : "HTX") : "all",
                 productNew: "",
                 productTop: false,
                 productStandard: "all",
@@ -72,7 +90,10 @@ const ProductInfo = () => {
                 <div className="info-bg-title absolute top-7 left-1/2 -translate-x-1/2 font-bold text-4xl text-white tracking-wider">
                     THÔNG TIN CHI TIẾT
                 </div>
-                <div className="bg-back-home absolute top-7 left-4 flex items-center cursor-pointer">
+                <div
+                    className="bg-back-home absolute top-7 left-4 flex items-center cursor-pointer"
+                    onClick={() => window.history.back()}
+                >
                     <img
                         src="/images/back-arrow.png"
                         alt=""
@@ -90,7 +111,14 @@ const ProductInfo = () => {
                             {productDetail?.SP_TenSanPham}
                         </p>
                         <p className="info-price font-bold text-3xl mb-6 self-center text-red-700">
-                            {productDetail?.GSP_Gia}
+                            {(checkKM()
+                                ? (productDetail?.GSP_Gia *
+                                      (100 - productDetail?.KM_PhanTram)) /
+                                  100
+                                : productDetail?.GSP_Gia
+                            )
+                                .toString()
+                                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
                             &nbsp;vnđ&nbsp;/&nbsp;1&nbsp;
                             {productDetail?.GSP_DonViTinh}
                         </p>
@@ -109,36 +137,46 @@ const ProductInfo = () => {
                         </p>
                         <p className="info-star text-lg my-4">
                             <span className="font-bold">Đánh giá: </span>
-                            <span>
-                                <img
-                                    src="/images/star.png"
-                                    alt=""
-                                    className="h-5 w-5 inline-block"
-                                />
-                                <img
-                                    src="/images/star.png"
-                                    alt=""
-                                    className="h-5 w-5 inline-block"
-                                />
-                                <img
-                                    src="/images/star.png"
-                                    alt=""
-                                    className="h-5 w-5 inline-block"
-                                />
-                                <img
-                                    src="/images/star.png"
-                                    alt=""
-                                    className="h-5 w-5 inline-block"
-                                />
-                            </span>
+                            {numStar === 0 ? (
+                                <span>Chưa có đánh giá</span>
+                            ) : (
+                                star.map((item, index) => {
+                                    if (index <= numStar - 1) {
+                                        return (
+                                            <i
+                                                className="fa-solid fa-star text-xl text-yellow-400"
+                                                key={index}
+                                            ></i>
+                                        );
+                                    } else if (
+                                        index > numStar &&
+                                        numStar <= index + 1
+                                    )
+                                        return (
+                                            <i
+                                                className="fa-regular fa-star text-xl text-yellow-400"
+                                                key={index}
+                                            ></i>
+                                        );
+                                    else {
+                                        return (
+                                            <i
+                                                className="fa-solid fa-star-half-stroke text-xl text-yellow-400"
+                                                key={index}
+                                            ></i>
+                                        );
+                                    }
+                                })
+                            )}
                         </p>
-                        <div className="info-standard text-lg my-2 w-full flex justify-around">
+                        <div className="info-standard flex-1 mt-2 text-lg my-2 w-full flex justify-around">
                             {arraySP_Chuan.length > 0
                                 ? arraySP_Chuan.map((chuan) => (
                                       <img
                                           src={`/images/standard-${chuan}.png`}
                                           alt=""
-                                          className="w-[100px] "
+                                          className="w-[130px] "
+                                          key={chuan}
                                       />
                                   ))
                                 : null}
@@ -163,9 +201,9 @@ const ProductInfo = () => {
                             </div>
                         )}
                     </div>
-                    {productDetail?.KM_MaKM ? (
+                    {checkKM() ? (
                         <div className="absolute top-3 -left-4 rounded-md bg-red-700 text-white font-bold text-lg px-2 py-1">
-                            <span>Giảm 20%</span>
+                            <span>Giảm {productDetail?.KM_PhanTram}%</span>
                             <div className="absolute top-[32px] left-0 border-[8px] border-t-red-700  border-l-transparent border-r-red-700 border-b-transparent"></div>
                         </div>
                     ) : null}
@@ -275,7 +313,7 @@ const ProductInfo = () => {
                                 >
                                     <Product
                                         data={item}
-                                        customProduct="h-[275px] min-w-[185px] max-w-[185px]"
+                                        customProduct="h-[275px] min-w-[220px] max-w-[220px]"
                                         customTSP="leading-4 h-[35px] text-base"
                                         onView={() => {}}
                                     ></Product>

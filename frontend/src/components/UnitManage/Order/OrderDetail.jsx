@@ -1,7 +1,9 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import axios from "../../../api/axios.js";
+import { toast } from "react-toastify";
 const OrderDetail = ({ data, setShowDetail }) => {
+    console.log(data);
     const { user, accessToken, userUnit } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const timesReceiving = () => {
@@ -90,10 +92,9 @@ const OrderDetail = ({ data, setShowDetail }) => {
     };
 
     const calculateNextShip =
-        data.CTDH_GiaoHang?.split(", ")[0] &&
-        data.CTDH_GiaoHang?.split(", ")[1] === "null"
-            ? parseInt(data.CTDH_GiaoHang?.split(", ")[0]) + 1
-            : 1;
+        data.CTDH_GiaoHang?.split(", ")[0] === "null"
+            ? 1
+            : parseInt(data.CTDH_GiaoHang?.split(", ")[0]) + 1;
 
     const calculateNextDateShip = () => {
         let numberCycle = data.CTDH_ChuKyNhan?.split(" ")[0];
@@ -124,6 +125,7 @@ const OrderDetail = ({ data, setShowDetail }) => {
                     ND_MaND: user.ND_MaND,
                     SP_MaSP: data.SP_MaSP,
                     DH_MaDH: data.DH_MaDH,
+                    PTTT_MaPTTT: data.PTTT_MaPTTT,
                 },
             },
         });
@@ -175,6 +177,26 @@ const OrderDetail = ({ data, setShowDetail }) => {
                     CTDH_SoLanNhan: timesReceiving(),
                 },
             },
+        });
+    };
+    const handleCancel = async (values) => {
+        const data = {
+            SP_MaSP: values.SP_MaSP,
+            DH_MaDH: values.DH_MaDH,
+            LDV_MaLDV: userUnit.LDV_MaLDV,
+        };
+        const res = await axios.post("/common/request-cancel", data, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        toast.success(res.data.message, {
+            position: "top-right",
+            autoClose: 2500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
         });
     };
     return (
@@ -299,6 +321,12 @@ const OrderDetail = ({ data, setShowDetail }) => {
                                 {data.TTDH_TenTrangThai}
                             </div>
                         )}
+                        {user.LND_MaLND === "DN" &&
+                        data.TTDH_MaTTDH === "CTT" ? (
+                            <button className="bg-primary-color mt-2 text-white px-4 py-2 rounded-lg hover:bg-hover-priColor">
+                                Thanh toán
+                            </button>
+                        ) : null}
                     </div>
                 </div>
                 <div className="col-span-9 text-lg  [&>*]:mb-2 grid grid-cols-12 gap-8">
@@ -335,16 +363,12 @@ const OrderDetail = ({ data, setShowDetail }) => {
                                 <div>
                                     <span>Đã nhận:&nbsp;</span>
                                     <span>
-                                        {(data.CTDH_GiaoHang?.split(", ")[0] &&
-                                            data.CTDH_GiaoHang?.split(
-                                                ", "
-                                            )[1]) === "null"
-                                            ? data.CTDH_GiaoHang?.split(", ")[0]
-                                            : 0}
+                                        {data.CTDH_GiaoHang?.split(", ")[0] ||
+                                            "0"}
                                         &nbsp;lần
                                     </span>
                                 </div>
-                                {data.TTDH_MaTTDH === "DTH" ||
+                                {data.TTDH_MaTTDH.search("DTH") > -1 ||
                                 data.TTDH_MaTTDH === "CXN" ? (
                                     <div className="flex justify-between">
                                         <span>
@@ -362,12 +386,68 @@ const OrderDetail = ({ data, setShowDetail }) => {
                                     </div>
                                 ) : null}
 
-                                {data.TTDH_MaTTDH === "DTH" ||
+                                {data.TTDH_MaTTDH.search("DTH") > -1 ||
                                 data.TTDH_MaTTDH === "CXN" ? (
                                     <div className="flex justify-between items-center">
-                                        <button className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center cursor-pointer hover:bg-hover-secColor">
-                                            Hủy đơn
-                                        </button>
+                                        {user.LND_MaLND === "DN" &&
+                                        data.CTDH_GiaoHang.split(", ")[2] ===
+                                            "HUY" ? (
+                                            <div className="min-w-[100px] bg-gray-200 text-gray-700 p-2  font-bold rounded-lg text-center ">
+                                                Đã yêu cầu hủy
+                                            </div>
+                                        ) : user.LND_MaLND === "DN" &&
+                                          data.CTDH_GiaoHang.split(", ")[3] ===
+                                              "HUY" ? (
+                                            <button
+                                                className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center cursor-pointer hover:bg-hover-secColor "
+                                                onClick={() =>
+                                                    handleConfirmCancel(data)
+                                                }
+                                            >
+                                                Xác nhận hủy
+                                            </button>
+                                        ) : (
+                                            user.LND_MaLND === "DN" && (
+                                                <button
+                                                    className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center cursor-pointer hover:bg-hover-secColor "
+                                                    onClick={() =>
+                                                        handleCancel(data)
+                                                    }
+                                                >
+                                                    Hủy
+                                                </button>
+                                            )
+                                        )}
+                                        {(user.LND_MaLND === "HTX" &&
+                                            data.CTDH_GiaoHang.split(
+                                                ", "
+                                            )[3]) === "HUY" ? (
+                                            <button className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center  hover:bg-hover-secColor cursor-not-allowed">
+                                                Đã yêu cầu hủy
+                                            </button>
+                                        ) : user.LND_MaLND === "HTX" &&
+                                          data.CTDH_GiaoHang.split(", ")[2] ===
+                                              "HUY" ? (
+                                            <button
+                                                className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center cursor-pointer hover:bg-hover-secColor "
+                                                onClick={() =>
+                                                    handleConfirmCancel(data)
+                                                }
+                                            >
+                                                Xác nhận hủy
+                                            </button>
+                                        ) : (
+                                            user.LND_MaLND === "HTX" && (
+                                                <button
+                                                    className="min-w-[100px] bg-secondary-color p-2 text-white font-bold rounded-lg text-center cursor-pointer hover:bg-hover-secColor "
+                                                    onClick={() =>
+                                                        handleCancel(data)
+                                                    }
+                                                >
+                                                    Hủy
+                                                </button>
+                                            )
+                                        )}
                                         {user.LND_MaLND === "DN" ? (
                                             <button
                                                 className={` p-2  font-bold rounded-lg   ${

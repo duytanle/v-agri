@@ -57,11 +57,7 @@ export async function getRowJoins(table, infoJoin, where = "") {
             where ? `where ${table}.${where}` : ``
         }`
     );
-    // console.log(
-    //     `SELECT * FROM ${table} ${joinString.join(" ")} ${
-    //         where ? `where ${table}.${where}` : ``
-    //     }`
-    // );
+
     return row;
 }
 
@@ -102,5 +98,17 @@ export async function getDataCustom(
     //         preCondition ? `${preCondition};` : ""
     //     }\nSELECT ${selectCustom} FROM ${fromCustom} ${conditionCustom}`
     // );
+    return result;
+}
+
+export async function deleteRow(table, column, where) {
+    const result = await pool.query(
+        `delete from ${table} where ${column}="${where}"`
+    );
+    return result;
+}
+
+export async function deleteCustom(table, where) {
+    const result = await pool.query(`delete from ${table} where ${where}`);
     return result;
 }

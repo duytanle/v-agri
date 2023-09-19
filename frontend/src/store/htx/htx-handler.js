@@ -21,7 +21,7 @@ function* handleHTXUpdateInfo({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {}
 }
@@ -36,7 +36,7 @@ function* handleHTXCreateProduct({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -54,7 +54,7 @@ function* handleHTXConfirmOrder({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -71,7 +71,7 @@ function* handleHTXCancelOrder({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -89,7 +89,7 @@ function* handleHTXShipOrder({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);
@@ -107,7 +107,7 @@ function* handleHTXIntroProduct({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         console.log(error);

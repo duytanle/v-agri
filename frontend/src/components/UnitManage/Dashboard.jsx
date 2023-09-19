@@ -7,16 +7,17 @@ import { useSelector } from "react-redux";
 const Dashboard = () => {
     const { dashboard } = useSelector((state) => state.common);
     const labelsPie = () => {
-        let labels = dashboard.pieData?.map((item) => item.SP_TenSanPham) || "";
-        if (dashboard.pieData?.length < 5) {
+        let labels =
+            dashboard?.pieData?.map((item) => item.SP_TenSanPham) || "";
+        if (dashboard?.pieData?.length < 5) {
             return labels;
         } else {
             return [...labels.slice(0, 5), "Sản phẩm khác"];
         }
     };
     const dataPie = () => {
-        let data = dashboard.pieData?.map((item) => item.TotalValue) || [];
-        if (dashboard.pieData?.length < 5) {
+        let data = dashboard?.pieData?.map((item) => item.TotalValue) || [];
+        if (dashboard?.pieData?.length < 5) {
             return data;
         } else {
             let dataOutOf = data
@@ -30,14 +31,14 @@ const Dashboard = () => {
     };
     const monthOrderNumber = () => {
         let data = Array(12).fill(0);
-        dashboard.columnData?.map((item) => {
+        dashboard?.columnData?.map((item) => {
             data[parseInt(item.Month)] = item.MonthOrder;
         });
         return data;
     };
     const monthValueNumber = () => {
         let data = Array(12).fill(0);
-        dashboard.columnData?.map((item) => {
+        dashboard?.columnData?.map((item) => {
             data[parseInt(item.Month)] = item.MonthValue || 0;
         });
         return data;
@@ -63,28 +64,28 @@ const Dashboard = () => {
             <div className="dashboard-number my-2 flex justify-evenly">
                 <DashboardNumber
                     iconClass="fa-solid fa-boxes-stacked"
-                    number={dashboard.product}
+                    number={dashboard?.product}
                     text="Sản phẩm"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-file-invoice"
-                    number={dashboard.orderAwait}
+                    number={dashboard?.orderAwait}
                     text="Đơn hàng"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-truck-fast"
-                    number={dashboard.orderProgress}
+                    number={dashboard?.orderProgress}
                     text="Đơn giao"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-triangle-exclamation"
-                    number={dashboard.warning}
+                    number={dashboard?.warning}
                     text="Cảnh báo"
                 ></DashboardNumber>
             </div>
             <div className="dashboard-chart grid grid-cols-2 h-[75%] mt-10">
                 <div className="chart-bar-order col-span-1  w-full h-[90%] mt-5 relative">
-                    {dashboard.pieData?.length > 0 ? (
+                    {dashboard?.pieData?.length > 0 ? (
                         <>
                             <PieChart
                                 data={dataPieChart}

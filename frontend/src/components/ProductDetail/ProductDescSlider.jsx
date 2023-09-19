@@ -44,8 +44,9 @@ const ProductDescSlider = ({
                     <div
                         className="absolute top-2 right-2 w-7 h-7 cursor-pointer bg-white flex items-center justify-center rounded-full custom-box-shadow"
                         onClick={() => {
-                            props.deleteImage(imageData[currentImage]?.id);
-                            nextImage();
+                            const deleteID = imageData[currentImage]?.id;
+                            goToImage(0);
+                            props.deleteImage(deleteID);
                         }}
                     >
                         <i className="fa-solid fa-trash"></i>

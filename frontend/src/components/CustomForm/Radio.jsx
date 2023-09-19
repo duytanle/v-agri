@@ -8,7 +8,9 @@ const Radio = ({ control, ...props }) => {
         defaultValue: props.value,
     });
     return (
-        <label className="cursor-pointer custom-radio h-[20px] w-[20px] shrink-0 flex justify-center items-center bg-white rounded-full border-2 border-primary-color">
+        <label
+            className={`cursor-pointer custom-radio h-[20px] w-[20px] shrink-0 flex justify-center items-center bg-white rounded-full border-2 border-primary-color ${props.custom}`}
+        >
             <input
                 {...field}
                 type="radio"

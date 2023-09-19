@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import OrderListManage from "./OrderListManage";
-
+import queryString from "query-string";
 const OrderManage = () => {
     const [tab, setTab] = useState("allOrder");
     const { user, userUnit, accessToken } = useSelector((state) => state.auth);
     const { orders } = useSelector((state) => state.product);
     const dispatch = useDispatch();
-    useEffect(() => {}, []);
     return (
         <div className="order-list mt-4 ">
             <div className="setting-tabs flex flex-col h-[580px] relative pt-2">
                 <div className="title-tabs grid grid-cols-5 gap-5">
                     <button
-                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                        className={` py-3  text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
                             tab === "allOrder"
                                 ? "bg-white text-black active-tabs"
                                 : "text-white"
@@ -23,7 +22,7 @@ const OrderManage = () => {
                         Tất cả đơn hàng
                     </button>
                     <button
-                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                        className={` py-3  text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
                             tab === "orderConfirm"
                                 ? "bg-white text-black active-tabs"
                                 : "text-white"
@@ -32,8 +31,9 @@ const OrderManage = () => {
                     >
                         Chờ xác nhận
                     </button>
+
                     <button
-                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                        className={` py-3  text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
                             tab === "orderProcessing"
                                 ? "bg-white text-black active-tabs"
                                 : "text-white"
@@ -43,7 +43,7 @@ const OrderManage = () => {
                         Đang thực hiện
                     </button>
                     <button
-                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                        className={` py-3  text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
                             tab === "orderCancel"
                                 ? "bg-white text-black active-tabs"
                                 : "text-white"
@@ -53,7 +53,7 @@ const OrderManage = () => {
                         Đã hủy
                     </button>
                     <button
-                        className={` p-3 text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
+                        className={` py-3  text-center relative outline-none bg-primary-color rounded-md  font-bold text-lg ${
                             tab === "orderFinished"
                                 ? "bg-white text-black active-tabs"
                                 : "text-white"
@@ -75,7 +75,9 @@ const OrderManage = () => {
                         <div className="w-full h-full box-shadow-custom rounded-xl">
                             <OrderListManage
                                 tab={tab}
-                                orderList={orders}
+                                orderList={orders.filter(
+                                    (item) => item.TTDH_MaTTDH !== "CTT"
+                                )}
                             ></OrderListManage>
                         </div>
                     </div>
@@ -108,7 +110,8 @@ const OrderManage = () => {
                             <OrderListManage
                                 tab={tab}
                                 orderList={orders.filter(
-                                    (item) => item.TTDH_MaTTDH === "DTH"
+                                    (item) =>
+                                        item.TTDH_MaTTDH.search("DTH") > -1
                                 )}
                             ></OrderListManage>
                         </div>

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 
-const OrderPayment = () => {
+const OrderPayment = ({ setOrderPayment }) => {
     const [cod, setCod] = useState(true);
     const handleClickPayment = (event) => {
-        {
-            event.currentTarget.classList.contains("cod")
-                ? setCod(true)
-                : setCod(false);
+        if (event.currentTarget.classList.contains("cod")) {
+            setCod(true);
+            setOrderPayment("COD");
+        } else {
+            setCod(false);
+            setOrderPayment("ONLINE");
         }
     };
     return (

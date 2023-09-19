@@ -6,6 +6,7 @@ import {
     getDataCustom,
     getRowJoin,
     getRowJoins,
+    postRow,
     updateRows,
 } from "../services/db.js";
 
@@ -17,8 +18,6 @@ const qtvdbController = {
                 message: "Bạn không có quyền truy cập tài nguyên",
             });
         } else {
-            let totalViolent = 0;
-            let confirmStandard = [];
             try {
                 const [product] = await countData("san_pham", "SP_MaSP");
                 const products = await getByColumn(
@@ -26,66 +25,49 @@ const qtvdbController = {
                     "LSP_MaLSP",
                     "HTX"
                 );
+                let productVerify = 0;
+                for (let i = 0; i < products.length; ++i) {
+                    if (products[i].SP_MinhChung !== "") {
+                        if (products[i].SP_Chuan === null) {
+                            productVerify += 1;
+                        } else {
+                            let numMC =
+                                products[i].SP_MinhChung.split(", ").length;
 
-                const [verify] = await countData(
-                    "don_vi",
-                    "DV_MaDV",
-                    `DV_XacMinh IS NULL`
-                );
-                const [warning] = await countData(
-                    "nguoi_dung",
-                    "ND_MaND",
-                    "ND_CanhBao IS NOT NULL"
-                );
-                if (warning.CountValue !== 0) {
-                    const [warningList] = await getAllRow("don_vi");
-                    totalViolent = warningList.reduce((accumulator, unit) => {
-                        let unitWarning = parseInt(
-                            unit.DV_CanhBao.split(" ")[0]
-                        );
-                        if (unitWarning === 3) {
-                            return accumulator + 1;
+                            let numChuan =
+                                products[i].SP_Chuan.split(", ").length;
+                            if (numMC > numChuan) {
+                                productVerify += 1;
+                            }
                         }
-                    }, 0);
+                    }
                 }
-                const [htx] = await countData(
-                    "nguoi_dung",
-                    "ND_MaND",
-                    `LND_MaLND="HTX"`
+
+                const [dnProduct] = await countData(
+                    "san_pham",
+                    "SP_MaSP",
+                    `LSP_MaLSP="DN"`
                 );
-                const [dn] = await countData(
-                    "nguoi_dung",
-                    "ND_MaND",
-                    `LND_MaLND="DN"`
+                const [htxProduct] = await countData(
+                    "san_pham",
+                    "SP_MaSP",
+                    `LSP_MaLSP="HTX"`
                 );
-                const [nv] = await countData(
-                    "nguoi_dung",
-                    "ND_MaND",
-                    `LND_MaLND="NV"`
-                );
+
                 const columnData = await getDataCustom(
                     "",
-                    "date_format(str_to_date(ND_NgayDangKy, '%d/%m/%Y'), '%m') AS month , date_format(str_to_date(ND_NgayDangKy, '%d/%m/%Y'), '%Y') as year, count(date_format(str_to_date(ND_NgayDangKy, '%d/%m/%Y'), '%m')) as account",
-                    "nguoi_dung",
-                    `where date_format(str_to_date(ND_NgayDangKy, '%d/%m/%Y'), '%Y') = year(CURDATE()) group by Month`
+                    "date_format(str_to_date(SP_NgayCapNhat, '%d/%m/%Y'), '%m') AS month , date_format(str_to_date(SP_NgayCapNhat, '%d/%m/%Y'), '%Y') as year, count(date_format(str_to_date(SP_NgayCapNhat, '%d/%m/%Y'), '%m')) as sanPham",
+                    "san_pham",
+                    `where date_format(str_to_date(SP_NgayCapNhat, '%d/%m/%Y'), '%Y') = year(CURDATE()) group by Month`
                 );
+
                 return res.status(201).json({
                     status: true,
                     result: {
-                        account: account.CountValue,
-                        verify: verify.CountValue,
-                        warning: warning.CountValue,
-                        violent: totalViolent,
-                        pieData: {
-                            htx: htx.CountValue,
-                            dn: dn.CountValue,
-                            nv: nv.CountValue,
-                            qtv:
-                                account.CountValue -
-                                htx.CountValue -
-                                dn.CountValue -
-                                nv.CountValue,
-                        },
+                        product: product.CountValue,
+                        productVerify,
+                        dnProduct: dnProduct.CountValue,
+                        htxProduct: htxProduct.CountValue,
                         columnData,
                     },
                 });
@@ -94,52 +76,101 @@ const qtvdbController = {
             }
         }
     },
-    getAccounts: async (req, res) => {
-        if (req.LND_MaLND !== "QTV") {
+    getProductVerify: async (req, res) => {
+        if (req.LND_MaLND !== "QTVBD") {
             return res.status(403).json({
                 status: false,
                 message: "Bạn không có quyền truy cập tài nguyên",
             });
         } else {
-            const { search, newAdd, typeAccount } = req.query;
-            const customSearch = (" " + search?.trim() + " ").replaceAll(
-                " ",
-                "%"
-            );
-            let result = [];
-            let status = true;
-            let message = "";
             try {
-                result = await getDataCustom(
-                    "",
-                    "*",
-                    " nguoi_dung inner join loai_nguoi_dung on nguoi_dung.LND_MaLND=loai_nguoi_dung.LND_MaLND",
-                    `${
-                        search !== "" && typeAccount !== "all"
-                            ? `where ND_HoTen LIKE "${customSearch}" AND nguoi_dung.LND_MaLND="${typeAccount}"`
-                            : search !== ""
-                            ? `where ND_HoTen LIKE "${customSearch}"`
-                            : typeAccount !== "all"
-                            ? `where nguoi_dung.LND_MaLND="${typeAccount}"`
-                            : ""
-                    } ${
-                        newAdd === "true"
-                            ? " order by ND_NgayDangKy DESC, ND_MaND ASC"
-                            : " order by ND_MaND ASC"
-                    }`
-                );
-                if (result.length === 0) {
-                    result = await getRowJoins("nguoi_dung", [
+                const products = await getRowJoins(
+                    "san_pham",
+                    [
                         {
-                            table1: "nguoi_dung",
-                            table2: "loai_nguoi_dung",
-                            fieldCon: "LND_MaLND",
+                            table1: "san_pham",
+                            table2: "gia_san_pham",
+                            fieldCon: "GSP_MaGSP",
                         },
-                    ]);
-                    status = false;
-                    message = "Không có thông tin tìm kiếm phù hợp";
+                        {
+                            table1: "san_pham",
+                            table2: "don_vi",
+                            fieldCon: "DV_MaDV",
+                        },
+                        {
+                            table1: "don_vi",
+                            table2: "dia_chi_chi_tiet",
+                            fieldCon: "DCCT_MaDCCT",
+                        },
+                        {
+                            table1: "dia_chi_chi_tiet",
+                            table2: "xa_phuong",
+                            fieldCon: "XP_MaXP",
+                        },
+                        {
+                            table1: "xa_phuong",
+                            table2: "quan_huyen",
+                            fieldCon: "QH_MaQH",
+                        },
+                        {
+                            table1: "quan_huyen",
+                            table2: "tinh_thanh",
+                            fieldCon: "TT_MaTT",
+                        },
+                    ],
+                    `LSP_MaLSP="HTX"`
+                );
+
+                let productVerify = [];
+                for (let i = 0; i < products.length; ++i) {
+                    if (products[i].SP_MinhChung !== "") {
+                        if (products[i].SP_Chuan === null) {
+                            productVerify.push(products[i]);
+                        } else {
+                            let numMC =
+                                products[i].SP_MinhChung.split(", ").length;
+
+                            let numChuan =
+                                products[i].SP_Chuan.split(", ").length;
+                            if (numMC > numChuan) {
+                                productVerify.push(products[i]);
+                            }
+                        }
+                    }
                 }
-                return res.status(201).json({ status, result, message });
+                return res.status(201).json({ status: true, productVerify });
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    },
+    confirmVerify: async (req, res) => {
+        if (req.LND_MaLND !== "QTVBD") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            try {
+                const {
+                    verify,
+                    checkVerify,
+                    verifyLink,
+                    checkVerifyLink,
+                    SP_MaSP,
+                } = req.body;
+                let arrayUpdate = [];
+                if (checkVerify) arrayUpdate.push(`SP_Chuan="${verify}"`);
+                if (checkVerifyLink)
+                    arrayUpdate.push(`SP_MinhChung="${verifyLink}"`);
+                await updateRows(
+                    "san_pham",
+                    arrayUpdate.join(", "),
+                    `SP_MaSP="${SP_MaSP}"`
+                );
+                return res
+                    .status(201)
+                    .json({ status: true, message: "Xác minh thành công" });
             } catch (error) {
                 console.log(error);
             }

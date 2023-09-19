@@ -1,4 +1,5 @@
 import {
+    deleteRow,
     getByColumn,
     getByColumnCons,
     getMaxID,
@@ -10,7 +11,23 @@ import commonController from "./commonController.js";
 
 const htxController = {
     createProduct: async (req, res) => {
-        const product = req.body;
+        const {
+            DV_MaDV,
+            LSP_MaLSP,
+            DMSP_MaDMSP,
+            SP_TenSanPham,
+            SP_SoLuongCungCau,
+            SP_ChuKyCungCau,
+            SP_AnhDaiDien,
+            SP_MoTa,
+            SP_AnhMoTa,
+            SP_MinhChung,
+            GSP_Gia,
+            GSP_DonViTinh,
+            KM_PhanTram,
+            KM_NgayBatDau,
+            KM_NgayKetThuc,
+        } = req.body;
 
         try {
             const [maxMaSP] = await getMaxID("san_pham", "SP_MaSP");
@@ -26,20 +43,38 @@ const htxController = {
                       "GSP"
                   )
                 : "GSP_000001";
-
+            let maKM = "";
+            if (KM_NgayBatDau) {
+                const [maxMaKM] = await getMaxID("khuyen_mai", "KM_MaKM");
+                maKM = maxMaKM["MAX(KM_MaKM)"]
+                    ? commonController.calculateID(
+                          maxMaKM["MAX(KM_MaKM)"],
+                          "KM"
+                      )
+                    : "KM_000001";
+                await postRow(
+                    "khuyen_mai",
+                    "KM_MaKM, KM_PhanTram,KM_NgayBatDau,KM_NgayKetThuc",
+                    `"${maKM}", "${KM_PhanTram}", "${KM_NgayBatDau}","${KM_NgayKetThuc}"`
+                );
+            }
             //Update GSP
             await postRow(
                 "gia_san_pham",
                 "GSP_MaGSP, GSP_Gia, GSP_DonViTinh, GSP_NgayCapNhat",
-                `"${maGSP}", "${product.GSP_Gia}", "${
-                    product.GSP_DonViTinh
-                }","${new Date().toLocaleString("pt-PT")}"`
+                `"${maGSP}", "${GSP_Gia}", "${GSP_DonViTinh}","${new Date().toLocaleString(
+                    "pt-PT"
+                )}"`
             );
 
             await postRow(
                 "san_pham",
-                "SP_MaSP, DV_MaDV, LSP_MaLSP, DMSP_MaDMSP, SP_TenSanPham, SP_SoLuongCungCau, SP_ChuKyCungCau, SP_AnhDaiDien, SP_MoTa, SP_AnhMoTa, SP_MinhChung, GSP_MaGSP",
-                `"${maSP}", "${product.DV_MaDV}", "${product.LSP_MaLSP}", "${product.DMSP_MaDMSP}", "${product.SP_TenSanPham}", "${product.SP_SoLuongCungCau}", "${product.SP_ChuKyCungCau}", "${product.SP_AnhDaiDien}", "${product.SP_MoTa}", "${product.SP_AnhMoTa}", "${product.SP_MinhChung}", "${maGSP}"`
+                `SP_MaSP, DV_MaDV, LSP_MaLSP, DMSP_MaDMSP, SP_TenSanPham, SP_SoLuongCungCau, SP_ChuKyCungCau, SP_AnhDaiDien, SP_MoTa, SP_AnhMoTa, SP_MinhChung, GSP_MaGSP ${
+                    KM_NgayBatDau ? ", KM_MaKM" : ""
+                }`,
+                `"${maSP}", "${DV_MaDV}", "${LSP_MaLSP}", "${DMSP_MaDMSP}", "${SP_TenSanPham}", "${SP_SoLuongCungCau}", "${SP_ChuKyCungCau}", "${SP_AnhDaiDien}", "${SP_MoTa}", "${SP_AnhMoTa}", "${SP_MinhChung}", "${maGSP}" ${
+                    KM_NgayBatDau ? `, "${maKM}"` : ""
+                }`
             );
             return res
                 .status(201)
@@ -49,6 +84,125 @@ const htxController = {
             return res.status(500).json({
                 status: true,
                 message: "Thêm sản phẩm không thành công",
+            });
+        }
+    },
+    updateProduct: async (req, res) => {
+        if (req.LND_MaLND !== "HTX") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            const {
+                SP_MaSP,
+                DV_MaDV,
+                LSP_MaLSP,
+                DMSP_MaDMSP,
+                SP_TenSanPham,
+                SP_SoLuongCungCau,
+                SP_ChuKyCungCau,
+                SP_MoTa,
+                SP_AnhMoTa,
+                SP_MinhChung,
+                GSP_Gia,
+                GSP_DonViTinh,
+                KM_PhanTram,
+                KM_NgayBatDau,
+                KM_NgayKetThuc,
+            } = req.body;
+            try {
+                if (
+                    SP_TenSanPham ||
+                    SP_SoLuongCungCau ||
+                    SP_ChuKyCungCau ||
+                    SP_MoTa ||
+                    SP_AnhMoTa ||
+                    SP_MinhChung ||
+                    GSP_Gia ||
+                    KM_NgayBatDau
+                ) {
+                    let maGSP = "";
+                    let maKM = "";
+                    if (GSP_Gia) {
+                        const [maxMaGSP] = await getMaxID(
+                            "gia_san_pham",
+                            "GSP_MaGSP"
+                        );
+                        maGSP = maxMaGSP["MAX(GSP_MaGSP)"]
+                            ? commonController.calculateID(
+                                  maxMaGSP["MAX(GSP_MaGSP)"],
+                                  "GSP"
+                              )
+                            : "GSP_000001";
+                        await postRow(
+                            "gia_san_pham",
+                            "GSP_MaGSP, GSP_DonViTinh, GSP_Gia, GSP_NgayCapNhat",
+                            `"${maGSP}", "${GSP_DonViTinh}",${GSP_Gia}, "${new Date().toLocaleString(
+                                "pt-PT"
+                            )}"`
+                        );
+                    }
+                    if (KM_NgayBatDau === "delete") {
+                        await deleteRow("khuyen_mai", "KM_MaKM", KM_MaKM);
+                    } else if (KM_NgayBatDau) {
+                        const [maxMaKM] = await getMaxID(
+                            "khuyen_mai",
+                            "KM_MaKM"
+                        );
+                        maKM = maxMaKM["MAX(KM_MaKM)"]
+                            ? commonController.calculateID(
+                                  maxMaKM["MAX(KM_MaKM)"],
+                                  "KM"
+                              )
+                            : "KM_000001";
+                        await postRow(
+                            "khuyen_mai",
+                            "KM_MaKM, KM_PhanTram, KM_NgayBatDau,KM_NgayKetThuc",
+                            `"${maKM}", "${KM_PhanTram}", "${KM_NgayBatDau}", "${KM_NgayKetThuc}"`
+                        );
+                    }
+                    let array = [
+                        `${DMSP_MaDMSP ? `DMSP_MaDMSP="${DMSP_MaDMSP}"` : ""}`,
+                        `${
+                            SP_TenSanPham
+                                ? `SP_TenSanPham="${SP_TenSanPham}"`
+                                : ""
+                        }`,
+                        `${
+                            SP_SoLuongCungCau
+                                ? `SP_SoLuongCungCau="${SP_SoLuongCungCau}"`
+                                : ""
+                        }`,
+                        `${
+                            SP_ChuKyCungCau
+                                ? `SP_ChuKyCungCau="${SP_ChuKyCungCau}"`
+                                : ""
+                        }`,
+                        `${SP_MoTa ? `SP_MoTa="${SP_MoTa}"` : ""}`,
+                        `${SP_AnhMoTa ? `SP_AnhMoTa="${SP_AnhMoTa}"` : ""}`,
+                        `${
+                            SP_MinhChung ? `SP_MinhChung="${SP_MinhChung}"` : ""
+                        }`,
+                        `${GSP_Gia ? `GSP_MaGSP="${maGSP}"` : ""}`,
+                        `${KM_NgayBatDau ? `KM_MaKM="${maKM}"` : ""}`,
+                        `SP_NgayCapNhat="${new Date().toLocaleString(
+                            "pt-PT"
+                        )}"`,
+                    ];
+                    array = array.filter((item) => item !== "");
+                    await updateRows(
+                        "san_pham",
+                        array.join(", "),
+                        `SP_MaSP="${SP_MaSP}"`
+                    );
+                }
+            } catch (error) {
+                console.log(error);
+            }
+            return res.status(201).json({
+                status: true,
+                message: "Cập nhật thông tin sản phẩm thành công.",
             });
         }
     },
@@ -193,6 +347,7 @@ const htxController = {
                             DV_TenDonVi: item.DV_TenDonVi,
                             DH_MaDH: item.DH_MaDH,
                             DH_NgayDat: item.DH_NgayDat,
+                            PTTT_MaPTTT: item.PTTT_MaPTTT,
                             SP_MaSP: item.SP_MaSP,
                             SP_TenSanPham: item.SP_TenSanPham,
                             SP_SoLuongCungCau: item.SP_SoLuongCungCau,
@@ -208,6 +363,7 @@ const htxController = {
                             CTDH_ChuKyNhan: item.CTDH_ChuKyNhan,
                             CTDH_SoDienThoai: item.CTDH_SoDienThoai,
                             CTDH_GiaoHang: item.CTDH_GiaoHang,
+                            CTDH_GiaTri: item.CTDH_GiaTri,
                             TTDH_MaTTDH: item.TTDH_MaTTDH,
                             TTDH_TenTrangThai: item.TTDH_TenTrangThai,
                             DCCT_MaDCCT: item.DCCT_MaDCCT,
@@ -237,11 +393,13 @@ const htxController = {
             });
         } else {
             try {
-                const { ND_MaND, SP_MaSP, DH_MaDH } = req.body;
+                const { ND_MaND, SP_MaSP, DH_MaDH, PTTT_MaPTTT } = req.body;
                 if (ND_MaND === req.ND_MaND) {
                     await updateRows(
                         "chi_tiet_don_hang",
-                        `TTDH_MaTTDH="DTH"`,
+                        `TTDH_MaTTDH="${
+                            PTTT_MaPTTT === "ONLINE" ? "DTH_CTT" : "DTH"
+                        }"`,
                         `SP_MaSP="${SP_MaSP}" AND DH_MaDH="${DH_MaDH}"`
                     );
                     return res.status(201).json({
@@ -269,9 +427,21 @@ const htxController = {
             try {
                 const { ND_MaND, SP_MaSP, DH_MaDH } = req.body;
                 if (ND_MaND === req.ND_MaND) {
+                    const [dh] = await getByColumn(
+                        "don_hang",
+                        "DH_MaDH",
+                        DH_MaDH
+                    );
+                    const [ctdh] = await getByColumnCons(
+                        "chi_tiet_don_hang",
+                        `SP_MaSP="${SP_MaSP}" AND DH_MaDH="${DH_MaDH}"`
+                    );
+
                     await updateRows(
                         "chi_tiet_don_hang",
-                        `TTDH_MaTTDH="HUY"`,
+                        `TTDH_MaTTDH=${
+                            dh.PTTT_MaPTTT === "ONLINE" ? `"HUY_CHT"` : `"HUY"`
+                        }`,
                         `SP_MaSP="${SP_MaSP}" AND DH_MaDH="${DH_MaDH}"`
                     );
                     return res.status(201).json({

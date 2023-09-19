@@ -1,3 +1,4 @@
+import { getByColumnCons } from "../services/db.js";
 import {
     countData,
     getAllJoins,
@@ -6,6 +7,7 @@ import {
     getDataCustom,
     getRowJoin,
     getRowJoins,
+    updateRows,
 } from "../services/db.js";
 
 const commonController = {
@@ -220,26 +222,32 @@ const commonController = {
                     // fieldCon: "KM_MaKM",
                     //     },
                     // ]);
-                    result = await getRowJoins(
-                        "san_pham",
-                        [
-                            {
-                                table1: "san_pham",
-                                table2: "gia_san_pham",
-                                fieldCon: "GSP_MaGSP",
-                                type: "LEFT JOIN",
-                            },
-                            {
-                                table1: "san_pham",
-                                table2: "khuyen_mai",
-                                fieldCon: "KM_MaKM",
-                                type: "LEFT JOIN",
-                            },
-                        ],
-                        `${type !== "all" ? `LSP_MaLSP != "${type}"` : ""}`
-                    );
-                    message = "Không có các sản phẩm phù hợp";
-                    status = false;
+                    if (unitID !== "") {
+                        message = "Đơn vị chưa có sản phẩm nào";
+                        status = true;
+                        result = [];
+                    } else {
+                        result = await getRowJoins(
+                            "san_pham",
+                            [
+                                {
+                                    table1: "san_pham",
+                                    table2: "gia_san_pham",
+                                    fieldCon: "GSP_MaGSP",
+                                    type: "LEFT JOIN",
+                                },
+                                {
+                                    table1: "san_pham",
+                                    table2: "khuyen_mai",
+                                    fieldCon: "KM_MaKM",
+                                    type: "LEFT JOIN",
+                                },
+                            ],
+                            `${type !== "all" ? `LSP_MaLSP != "${type}"` : ""}`
+                        );
+                        message = "Không có các sản phẩm phù hợp";
+                        status = false;
+                    }
                 }
             }
             return res.status(201).json({ status, result, message });
@@ -327,26 +335,29 @@ const commonController = {
                         table1: "don_vi",
                         table2: "dia_chi_chi_tiet",
                         fieldCon: "DCCT_MaDCCT",
+                        type: "LEFT JOIN",
                     },
                     {
                         table1: "dia_chi_chi_tiet",
                         table2: "xa_phuong",
                         fieldCon: "XP_MaXP",
+                        type: "LEFT JOIN",
                     },
                     {
                         table1: "xa_phuong",
                         table2: "quan_huyen",
                         fieldCon: "QH_MaQH",
+                        type: "LEFT JOIN",
                     },
                     {
                         table1: "quan_huyen",
                         table2: "tinh_thanh",
                         fieldCon: "TT_MaTT",
+                        type: "LEFT JOIN",
                     },
                 ],
                 `SP_MaSP="${req.params.id}"`
             );
-
             return res.status(201).json({ status: true, result });
         } catch (error) {
             console.log(error);
@@ -418,6 +429,181 @@ const commonController = {
             } catch (error) {
                 console.log(error);
             }
+        }
+    },
+    getProductAssess: async (req, res) => {
+        const { SP_MaSP, DV_MaDV, LDV_MaLDV } = req.query;
+        try {
+            const assess = await getRowJoins(
+                "danh_gia",
+                [
+                    {
+                        table1: "danh_gia",
+                        table2: "don_vi",
+                        fieldCon: "DV_MaDV",
+                    },
+                ],
+                `SP_MaSP="${SP_MaSP}"`
+            );
+            const [TrungBinh] = await getDataCustom(
+                "",
+                "avg(DG_Sao) as SoSao",
+                "danh_gia",
+                `where SP_MaSP="${SP_MaSP}"`
+            );
+            const [Sao1] = await countData(
+                "danh_gia",
+                "DG_MaDG",
+                `DG_Sao=1 AND ${`SP_MaSP="${SP_MaSP}"`}`
+            );
+            const [Sao2] = await countData(
+                "danh_gia",
+                "DG_MaDG",
+                `DG_Sao=2 AND ${`SP_MaSP="${SP_MaSP}"`}`
+            );
+            const [Sao3] = await countData(
+                "danh_gia",
+                "DG_MaDG",
+                `DG_Sao=3 AND ${`SP_MaSP="${SP_MaSP}"`}`
+            );
+            const [Sao4] = await countData(
+                "danh_gia",
+                "DG_MaDG",
+                `DG_Sao=4 AND ${`SP_MaSP="${SP_MaSP}"`}`
+            );
+            const [Sao5] = await countData(
+                "danh_gia",
+                "DG_MaDG",
+                `DG_Sao=5 AND ${`SP_MaSP="${SP_MaSP}"`}`
+            );
+
+            const [numProduct] = await countData(
+                "san_pham",
+                "SP_MaSP",
+                `DV_MaDV="${DV_MaDV}"`
+            );
+            let [infoUnit] = await getRowJoins(
+                `${LDV_MaLDV === "HTX" ? "qlv_htx" : "qlv_doanh_nghiep"}`,
+                [
+                    {
+                        table1: `${
+                            LDV_MaLDV === "HTX" ? "qlv_htx" : "qlv_doanh_nghiep"
+                        }`,
+                        table2: "nguoi_dung",
+                        fieldCon: "ND_MaND",
+                    },
+                ],
+                `DV_MaDV="${DV_MaDV}"`
+            );
+            if (infoUnit) {
+                const convertDate =
+                    infoUnit.ND_NgayDangKy.slice(0, 10).split("/") || [];
+                const date =
+                    convertDate[1] +
+                    "/" +
+                    convertDate[0] +
+                    "/" +
+                    convertDate[2];
+                const numDate = Math.ceil(
+                    (new Date() - new Date(date)) / 86400000
+                );
+                const numYear = Math.floor(numDate / 365);
+                const numMonth = Math.floor((numDate % 365) / 30);
+                const numDay = (numDate % 365) % 30;
+                const result = {
+                    list: assess,
+                    tb: TrungBinh.SoSao,
+                    sao1: Sao1.CountValue,
+                    sao2: Sao2.CountValue,
+                    sao3: Sao3.CountValue,
+                    sao4: Sao4.CountValue,
+                    sao5: Sao5.CountValue,
+                };
+                return res.status(201).json({
+                    status: true,
+                    assess: result,
+                    unit: {
+                        numProduct: numProduct.CountValue,
+                        time:
+                            numYear > 0
+                                ? numYear + " năm"
+                                : numMonth > 0
+                                ? numMonth + " tháng"
+                                : numDay + " ngày",
+                    },
+                });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    getUnitAssess: async (req, res) => {
+        const { DV_MaDV } = req.query;
+        try {
+            const assess = await getDataCustom(
+                "",
+                "*, danh_gia.DV_MaDV as DVDG",
+                "danh_gia inner join san_pham on danh_gia.SP_MaSP=san_pham.SP_MaSP inner join don_vi on san_pham.DV_MaDV=don_vi.DV_MaDV",
+                `where don_vi.DV_MaDV="${DV_MaDV}"`
+            );
+            let dvdg = [];
+            for (let i = 0; i < assess.length; ++i) {
+                const [info] = await getByColumn(
+                    "don_vi",
+                    "DV_MaDV",
+                    assess[i].DVDG
+                );
+                dvdg.push(info);
+            }
+            const [TrungBinh] = await getDataCustom(
+                "",
+                "avg(DG_Sao) as SoSao",
+                "danh_gia inner join san_pham on danh_gia.SP_MaSP=san_pham.SP_MaSP inner join don_vi on san_pham.DV_MaDV=don_vi.DV_MaDV",
+                `where don_vi.DV_MaDV="${DV_MaDV}"`
+            );
+            let sao = [];
+            for (let i = 0; i < 5; i++) {
+                const [Sao] = await countData(
+                    "danh_gia inner join san_pham on danh_gia.SP_MaSP=san_pham.SP_MaSP inner join don_vi on san_pham.DV_MaDV=don_vi.DV_MaDV",
+                    "danh_gia.SP_MaSP",
+                    `don_vi.DV_MaDV="${DV_MaDV}" AND DG_Sao=${i + 1}`
+                );
+                sao.push(Sao.CountValue);
+            }
+
+            const result = {
+                list: assess,
+                tb: TrungBinh.SoSao,
+                sao,
+                dvdg,
+            };
+            return res.status(201).json({ status: true, result });
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    requestCancel: async (req, res) => {
+        const { SP_MaSP, DH_MaDH, LDV_MaLDV } = req.body;
+        try {
+            const [ctdh] = await getByColumnCons(
+                "chi_tiet_don_hang",
+                `SP_MaSP="${SP_MaSP}" AND DH_MaDH="${DH_MaDH}"`
+            );
+            const gh = ctdh.CTDH_GiaoHang.split(", ");
+            let setValue = "";
+            if (LDV_MaLDV === "DN") {
+                setValue = gh[0] + ", " + gh[1] + ", " + "HUY, " + gh[3];
+            } else {
+                setValue = gh[0] + ", " + gh[1] + ", " + gh[2] + ", HUY";
+            }
+            await updateRows(
+                "chi_tiet_don_hang",
+                `CTDH_GiaoHang="${setValue}"`,
+                `SP_MaSP="${SP_MaSP}" AND DH_MaDH="${DH_MaDH}"`
+            );
+            return res.status(201).json({ message: "Yêu cầu hủy thành công" });
+        } catch (error) {
+            console.log(error);
         }
     },
 };

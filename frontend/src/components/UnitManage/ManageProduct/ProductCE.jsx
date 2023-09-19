@@ -7,9 +7,11 @@ import ProductFormCE from "./ProductFormCE";
 import { useDispatch, useSelector } from "react-redux";
 import { htxCreateProduct } from "../../../store/htx/htx-slice";
 import axios from "../../../api/axios";
+import { toast } from "react-toastify";
 const ProductCE = ({ handleCloseAdd, ...props }) => {
     const [checkImageProduct, setCheckImageProduct] = useState(false);
     const [resetForm, setResetForm] = useState(false);
+    const [completeTask, setCompleteTask] = useState(false);
     const { category, productDetail } = useSelector((state) => state.product);
     const { accessToken, userUnit } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
@@ -83,14 +85,17 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                     productTimeApplyUnit:
                         productDetail.SP_ChuKyCungCau.split(" ")[1],
                     productPrice: productDetail.GSP_Gia,
+                    productPriceUnit: productDetail.GSP_DonViTinh,
                     productDesc: productDetail.SP_MoTa,
                     productImage: productDetail.SP_AnhDaiDien,
+                    proPercent: productDetail.KM_PhanTram || "",
                 },
             };
         } else return {};
     };
     const {
         control,
+        setError,
         formState: { errors },
         setValue,
         watch,
@@ -103,28 +108,187 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
         ...checkEditProduct(),
     });
     const handleResetForm = () => {
-        reset({
-            productName: "",
-            productCategory: "default",
-            productAbility: "",
-            productAbilityUnit: "default",
-            productTimeApply: "",
-            productTimeApplyUnit: "default",
-            productPrice: "",
-            productDesc: "",
-            productImage: "default",
-        });
-        setResetForm(!resetForm);
+        if (Object.keys(productDetail).length > 0) {
+            reset({
+                productName: productDetail.SP_TenSanPham,
+                productCategory: productDetail.DMSP_MaDMSP,
+                productAbility: productDetail.SP_SoLuongCungCau.split(" ")[0],
+                productAbilityUnit:
+                    productDetail.SP_SoLuongCungCau.split(" ")[1],
+                productTimeApply: productDetail.SP_ChuKyCungCau.split(" ")[0],
+                productTimeApplyUnit:
+                    productDetail.SP_ChuKyCungCau.split(" ")[1],
+                productPrice: productDetail.GSP_Gia,
+                productPriceUnit: productDetail.GSP_DonViTinh,
+                productDesc: productDetail.SP_MoTa,
+                productImage: productDetail.SP_AnhDaiDien,
+                proPercent: productDetail.KM_PhanTram || "",
+            });
+            setResetForm(!resetForm);
+        } else {
+            reset({
+                productName: "",
+                productCategory: "default",
+                productAbility: "",
+                productAbilityUnit: "default",
+                productTimeApply: "",
+                productTimeApplyUnit: "default",
+                productPrice: "",
+                productDesc: "",
+                productImage: "default",
+            });
+            setResetForm(!resetForm);
+        }
     };
-    const handleUpdate = async (values) => {
-        if (!values.productImage) {
+    const handleCreateProduct = async (values) => {
+        if (typeof values.productImage !== "object") {
             setCheckImageProduct(true);
         } else {
-            setCheckImageProduct(false);
+            if (
+                values.promotion &&
+                !(
+                    (values.proPercent && values.proStart && values.proEnd) ||
+                    (!values.proPercent && !values.proStart && !values.proEnd)
+                )
+            ) {
+                if (values.proPercent >= 100) {
+                    setError("proPercent", {
+                        message: "Khuyến mãi thấp hơn 100%",
+                    });
+                } else {
+                    setError("proPercent", {
+                        message: "Vui lòng điền đầy đủ thông tin khuyến mãi",
+                    });
+                }
+            } else {
+                setCompleteTask(true);
+                setCheckImageProduct(false);
+                let resUploadProductImage = "";
+                let resUploadProductImageVerify = [];
+                let resUploadProductImageDesc = [];
+
+                const uploadImage = new FormData();
+                uploadImage.append("image", values.productImage, "file");
+                resUploadProductImage = await axios.post(
+                    "/htx/upload-image",
+                    uploadImage,
+                    {
+                        headers: {
+                            contentType: false,
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+
+                if (values.productImageVerify?.length > 0) {
+                    const uploadImageVerify = new FormData();
+                    Array.from(values.productImageVerify).forEach((file) => {
+                        uploadImageVerify.append("images", file, "file");
+                    });
+
+                    resUploadProductImageVerify = await axios.post(
+                        "/htx/upload-images",
+                        uploadImageVerify,
+                        {
+                            headers: {
+                                contentType: false,
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                }
+                if (values.productImageDesc?.length > 0) {
+                    const uploadImageDesc = new FormData();
+                    Array.from(values.productImageDesc).forEach((file) => {
+                        uploadImageDesc.append("images", file, "file");
+                    });
+
+                    resUploadProductImageDesc = await axios.post(
+                        "/htx/upload-images",
+                        uploadImageDesc,
+                        {
+                            headers: {
+                                contentType: false,
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                }
+
+                const product = {
+                    DV_MaDV: userUnit.DV_MaDV,
+                    LSP_MaLSP: userUnit.LDV_MaLDV,
+                    DMSP_MaDMSP: values.productCategory,
+                    SP_TenSanPham: values.productName,
+                    SP_SoLuongCungCau: `${values.productAbility} ${values.productAbilityUnit}`,
+                    SP_ChuKyCungCau: `${values.productTimeApply} ${values.productTimeApplyUnit}`,
+                    SP_AnhDaiDien: resUploadProductImage?.data?.path || "",
+                    SP_MoTa: values.productDesc,
+                    SP_AnhMoTa:
+                        resUploadProductImageDesc?.data?.paths.join(", ") || "",
+                    SP_MinhChung:
+                        resUploadProductImageVerify?.data?.paths.join(", ") ||
+                        "",
+                    GSP_Gia: values.productPrice,
+                    GSP_DonViTinh: values.productPriceUnit,
+                    KM_PhanTram: values.proPercent,
+                    KM_NgayBatDau: values.proStart
+                        .split("-")
+                        .reverse()
+                        .join("/"),
+                    KM_NgayKetThuc: values.proEnd
+                        .split("-")
+                        .reverse()
+                        .join("/"),
+                };
+                const response = await axios.post(
+                    "/htx/create-product",
+                    product,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+                setCompleteTask(false);
+                toast.success(response.data.message, {
+                    position: "top-right",
+                    autoClose: 2500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                });
+                handleResetForm();
+            }
+        }
+    };
+    const handleEditProduct = async (values) => {
+        if (
+            values.promotion &&
+            !(
+                (values.proPercent && values.proStart && values.proEnd) ||
+                (!values.proPercent && !values.proStart && !values.proEnd)
+            )
+        ) {
+            if (values.proPercent >= 100) {
+                setError("proPercent", {
+                    message: "Khuyến mãi thấp hơn 100%",
+                });
+            } else {
+                setError("proPercent", {
+                    message: "Vui lòng điền đầy đủ thông tin khuyến mãi",
+                });
+            }
+        } else {
+            setCompleteTask(true);
             let resUploadProductImage = "";
             let resUploadProductImageVerify = [];
             let resUploadProductImageDesc = [];
-            if (values.productImage) {
+            if (typeof values.productImage === "object") {
+                let resUploadProductImage = "";
                 const uploadImage = new FormData();
                 uploadImage.append("image", values.productImage, "file");
                 resUploadProductImage = await axios.post(
@@ -138,12 +302,11 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                     }
                 );
             }
-            if (values.productImageVerify?.length > 0) {
+            if (typeof values.productImageVerify === "object") {
                 const uploadImageVerify = new FormData();
                 Array.from(values.productImageVerify).forEach((file) => {
                     uploadImageVerify.append("images", file, "file");
                 });
-
                 resUploadProductImageVerify = await axios.post(
                     "/htx/upload-images",
                     uploadImageVerify,
@@ -155,12 +318,11 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                     }
                 );
             }
-            if (values.productImageDesc?.length > 0) {
+            if (typeof values.productImageDesc === "object") {
                 const uploadImageDesc = new FormData();
                 Array.from(values.productImageDesc).forEach((file) => {
                     uploadImageDesc.append("images", file, "file");
                 });
-
                 resUploadProductImageDesc = await axios.post(
                     "/htx/upload-images",
                     uploadImageDesc,
@@ -173,24 +335,92 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                 );
             }
 
-            const data = {
+            const product = {
+                SP_MaSP: productDetail.SP_MaSP,
                 DV_MaDV: userUnit.DV_MaDV,
                 LSP_MaLSP: userUnit.LDV_MaLDV,
-                DMSP_MaDMSP: values.productCategory,
-                SP_TenSanPham: values.productName,
-                SP_SoLuongCungCau: `${values.productAbility} ${values.productAbilityUnit}`,
-                SP_ChuKyCungCau: `${values.productTimeApply} ${values.productTimeApplyUnit}`,
-                SP_AnhDaiDien: resUploadProductImage?.data?.path || "",
-                SP_MoTa: values.productDesc,
+                KM_MaKM: productDetail.KM_MaKM,
+                DMSP_MaDMSP:
+                    values.productCategory !== productDetail.DMSP_MaDMSP
+                        ? values.productCategory
+                        : false,
+                SP_TenSanPham:
+                    values.productName != productDetail.SP_TenSanPham
+                        ? values.productName
+                        : false,
+                SP_SoLuongCungCau:
+                    `${values.productAbility} ${values.productAbilityUnit}` !==
+                    productDetail.SP_SoLuongCungCau
+                        ? `${values.productAbility} ${values.productAbilityUnit}`
+                        : false,
+                SP_ChuKyCungCau:
+                    `${values.productTimeApply} ${values.productTimeApplyUnit}` !==
+                    productDetail.SP_ChuKyCungCau
+                        ? `${values.productTimeApply} ${values.productTimeApplyUnit}`
+                        : false,
+                SP_AnhDaiDien: resUploadProductImage?.data?.path || false,
+                SP_MoTa:
+                    values.productDesc !== productDetail.SP_MoTa
+                        ? values.productDesc
+                        : false,
                 SP_AnhMoTa:
-                    resUploadProductImageDesc?.data?.paths.join(", ") || "",
-                SP_MinhChung:
-                    resUploadProductImageVerify?.data?.paths.join(", ") || "",
-                GSP_Gia: values.productPrice,
-                GSP_DonViTinh: values.productPriceUnit,
+                    resUploadProductImageDesc?.data?.paths.join(", ") || false,
+                SP_MinhChung: resUploadProductImageVerify?.data?.paths.join(
+                    ", "
+                )
+                    ? productDetail.SP_MinhChung
+                        ? resUploadProductImageVerify?.data?.paths.join(", ") +
+                          ", " +
+                          productDetail.SP_MinhChung
+                        : resUploadProductImageVerify?.data?.paths.join(", ")
+                    : false,
+
+                GSP_Gia:
+                    values.productPrice != productDetail.GSP_Gia ||
+                    values.productPriceUnit !== productDetail.GSP_DonViTinh
+                        ? values.productPrice
+                        : false,
+                GSP_DonViTinh:
+                    values.productPrice != productDetail.GSP_Gia ||
+                    values.productPriceUnit !== productDetail.GSP_DonViTinh
+                        ? values.productPriceUnit
+                        : false,
+                KM_PhanTram:
+                    values.proPercent !== productDetail.KM_PhanTram
+                        ? values.proPercent
+                        : "",
+                KM_NgayBatDau:
+                    values.proStart?.split("-").reverse().join("/") !==
+                    (productDetail.KM_NgayBatDau
+                        ? productDetail.KM_NgayBatDau
+                        : undefined)
+                        ? values.proStart?.split("-").reverse().join("/")
+                        : "",
+                KM_NgayKetThuc:
+                    values.proEnd?.split("-").reverse().join("/") !==
+                    (productDetail.KM_NgayKetThuc
+                        ? productDetail.KM_NgayKetThuc
+                        : undefined)
+                        ? values.proEnd?.split("-").reverse().join("/")
+                        : "",
             };
-            dispatch(htxCreateProduct({ token: accessToken, product: data }));
-            handleResetForm();
+
+            const response = await axios.put("/htx/update-product", product, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            setCompleteTask(false);
+            toast.success(response.data.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
         }
     };
     useEffect(() => {
@@ -205,6 +435,26 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                 productDetail.SP_ChuKyCungCau.split(" ")[1]
             );
             setValue("productPriceUnit", productDetail.GSP_DonViTinh);
+            if (productDetail.KM_MaKM) {
+                let startDate = productDetail.KM_NgayBatDau.split("/");
+                let newStartDate =
+                    startDate[1] + "/" + startDate[0] + "/" + startDate[2];
+                let endDate = productDetail.KM_NgayKetThuc.split("/");
+                let newEndDate =
+                    endDate[1] + "/" + endDate[0] + "/" + endDate[2];
+                setValue(
+                    "proStart",
+                    new Date(newStartDate)
+                        .toLocaleDateString("en-ZA")
+                        .replaceAll("/", "-")
+                );
+                setValue(
+                    "proEnd",
+                    new Date(newEndDate)
+                        .toLocaleDateString("en-ZA")
+                        .replaceAll("/", "-")
+                );
+            }
         }
     }, [productDetail]);
     return (
@@ -236,7 +486,7 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                 }`}
             >
                 <button
-                    className="setting-unit-reset bg-secondary-color p-2 rounded-lg font-bold text-white min-w-[140px]"
+                    className="setting-unit-reset bg-secondary-color p-2 rounded-lg font-bold text-white min-w-[140px] hover:bg-hover-secColor"
                     onClick={(event) => {
                         event.preventDefault();
                         handleResetForm();
@@ -244,12 +494,29 @@ const ProductCE = ({ handleCloseAdd, ...props }) => {
                 >
                     Đặt lại
                 </button>
-                <button
-                    className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white min-w-[120px]"
-                    onClick={handleSubmit(handleUpdate)}
-                >
-                    Thêm sản phẩm
-                </button>
+                {Object.keys(productDetail).length > 0 ? (
+                    <div
+                        className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white text-center min-w-[140px] hover:bg-hover-priColor flex justify-center cursor-pointer"
+                        onClick={handleSubmit(handleEditProduct)}
+                    >
+                        {completeTask ? (
+                            <div className="spinner"></div>
+                        ) : (
+                            "Cập nhật"
+                        )}
+                    </div>
+                ) : (
+                    <div
+                        className="setting-unit-update bg-primary-color rounded-lg p-2 font-bold text-white text-center min-w-[140px] hover:bg-hover-priColor flex justify-center cursor-pointer"
+                        onClick={handleSubmit(handleCreateProduct)}
+                    >
+                        {completeTask ? (
+                            <div className="spinner"></div>
+                        ) : (
+                            "Thêm sản phẩm"
+                        )}
+                    </div>
+                )}
             </div>
         </form>
     );

@@ -9,6 +9,7 @@ import queryString from "query-string";
 const UnitDetail = () => {
     const param = useParams().id;
     const { products } = useSelector((state) => state.product);
+
     const [filters, setFilters] = useState({
         search: "",
         unitID: param,
@@ -36,6 +37,10 @@ const UnitDetail = () => {
         dispatch({
             type: "GET_PRODUCT",
             payload: queryString.stringify(filters),
+        });
+        dispatch({
+            type: "COMMON_GET_ASSESS_UNIT",
+            payload: `DV_MaDV=${param}`,
         });
     }, []);
     useEffect(() => {

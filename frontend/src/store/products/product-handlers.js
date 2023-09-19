@@ -82,7 +82,7 @@ function* handleDNGetOrder({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         }
     } catch (error) {
@@ -103,7 +103,7 @@ function* handleHTXGetOrder({ payload }) {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "light",
+                theme: "colored",
             });
         }
     } catch (error) {

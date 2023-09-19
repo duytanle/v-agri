@@ -28,7 +28,7 @@ const ManageNav = ({ nav }) => {
                 {nav.length > 0
                     ? nav.map((item) => (
                           <div
-                              className="nav-item flex gap-4 items-center text-[18px]  my-2 px-5 py-2 cursor-pointer"
+                              className="nav-item flex gap-4 items-center text-[18px]  my-2 px-2 py-2 cursor-pointer"
                               key={item.id}
                           >
                               <i className={`${item.icon} w-[30px]`}></i>

@@ -6,10 +6,32 @@ import {
     updateRows,
     getRowJoin,
     getByColumnCons,
+    deleteRow,
+    deleteCustom,
 } from "../services/db.js";
 import commonController from "./commonController.js";
-
+import querystring from "qs";
+import crypto from "crypto";
+import moment from "moment/moment.js";
 const dnController = {
+    sortObject: (obj) => {
+        let sorted = {};
+        let str = [];
+        let key;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                str.push(encodeURIComponent(key));
+            }
+        }
+        str.sort();
+        for (key = 0; key < str.length; key++) {
+            sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(
+                /%20/g,
+                "+"
+            );
+        }
+        return sorted;
+    },
     createProduct: async (req, res) => {
         const product = req.body;
 
@@ -21,8 +43,8 @@ const dnController = {
 
             await postRow(
                 "san_pham",
-                "SP_MaSP, DV_MaDV, LSP_MaLSP, DMSP_MaDMSP, SP_TenSanPham, SP_SoLuongCungCau,  SP_AnhDaiDien, SP_MoTa",
-                `"${maSP}", "${product.DV_MaDV}", "${product.LSP_MaLSP}", "${product.DMSP_MaDMSP}", "${product.SP_TenSanPham}", "${product.SP_SoLuongCungCau}",  "${product.SP_AnhDaiDien}", "${product.SP_MoTa}"`
+                "SP_MaSP, DV_MaDV, LSP_MaLSP, DMSP_MaDMSP, SP_TenSanPham, SP_SoLuongCungCau, SP_ChuKyCungCau, SP_AnhDaiDien, SP_MoTa",
+                `"${maSP}", "${product.DV_MaDV}", "${product.LSP_MaLSP}", "${product.DMSP_MaDMSP}", "${product.SP_TenSanPham}", "${product.SP_SoLuongCungCau}", "${product.SP_ChuKuCungCau}", "${product.SP_AnhDaiDien}", "${product.SP_MoTa}"`
             );
             return res
                 .status(201)
@@ -104,7 +126,6 @@ const dnController = {
                     "gio_hang",
                     `SP_MaSP="${data.SP_MaSP}" AND DN_MaQL="${data.DN_MaQL}"`
                 );
-                console.log(exitsSP);
                 if (exitsSP) {
                     await updateRows(
                         "gio_hang",
@@ -211,7 +232,14 @@ const dnController = {
                     message: "Bạn không có quyền truy cập tài nguyên",
                 });
             } else {
-                const { infoShip, totalOrder, info, DN_MaQL } = req.body;
+                const {
+                    infoShip,
+                    totalOrder,
+                    info,
+                    orderPayment,
+                    orderPrice,
+                    DN_MaQL,
+                } = req.body;
                 let shipAfterHandle = new Array(infoShip.length);
                 const [maxMaDH] = await getMaxID("don_hang", "DH_MaDH");
                 const maDH = maxMaDH["MAX(DH_MaDH)"]
@@ -222,10 +250,10 @@ const dnController = {
                     : "DH_000001";
                 await postRow(
                     "don_hang",
-                    "DH_MaDH, DN_MaQL, DH_NgayDat, DH_GiaTri",
+                    "DH_MaDH, DN_MaQL, DH_NgayDat, DH_GiaTri, PTTT_MaPTTT",
                     `"${maDH}", "${DN_MaQL}", "${new Date().toLocaleString(
                         "pt-PT"
-                    )}", ${totalOrder}`
+                    )}", ${totalOrder}, "${orderPayment}"`
                 );
 
                 for (let i = 0; i < infoShip.length; ++i) {
@@ -285,11 +313,10 @@ const dnController = {
                         shipAfterHandle.splice(i, 1, maDCCT);
                     }
                 }
-
                 for (let i = 0; i < info.length; ++i) {
-                    await postRow(
+                    const result = await postRow(
                         "chi_tiet_don_hang",
-                        `SP_MaSP, DH_MaDH, DCCT_MaDCCT, CTDH_ThoiHan, CTDH_SoLuong, CTDH_NgayNhan, CTDH_ChuKyNhan, GSP_MaGSP, TTDH_MaTTDH, CTDH_SoDienThoai${
+                        `SP_MaSP, DH_MaDH, DCCT_MaDCCT, CTDH_ThoiHan, CTDH_SoLuong, CTDH_NgayNhan, CTDH_ChuKyNhan, GSP_MaGSP, TTDH_MaTTDH, CTDH_GiaTri, CTDH_GiaoHang, CTDH_SoDienThoai${
                             info[i].KM_MaKM ? ", KM_MaKM" : ""
                         }`,
                         `"${info[i].SP_MaSP}", "${maDH}", "${
@@ -298,16 +325,45 @@ const dnController = {
                             info[i].GH_SoLuong
                         }", "${info[i].GH_NgayNhan}", "${
                             info[i].GH_ChuKyNhan
-                        }", "${info[i].GSP_MaGSP}", "CXN", "${
+                        }", "${info[i].GSP_MaGSP}", ${
+                            orderPayment === "COD" ? `"CXN"` : `"CTT"`
+                        }, ${orderPrice[i]}, "null, null, null, null","${
                             infoShip[i].shipPhone
                         }"${info[i].KM_MaKM ? `,"${info[i].KM_MaKM}"` : ""}`
                     );
                 }
 
-                res.json({ status: true, message: "Đặt hàng thành công!" });
+                res.json({
+                    status: true,
+                    DH_MaDH: maDH,
+                    message: "Đặt hàng thành công!",
+                });
             }
         } catch (error) {
             console.log(error);
+        }
+    },
+    deleteOrder: async (req, res) => {
+        if (req.LND_MaLND !== "DN") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            const { sp, DN_MaQL } = req.body;
+            try {
+                for (let i = 0; i < sp.length; ++i) {
+                    await deleteCustom(
+                        "gio_hang",
+                        `SP_MaSP="${sp[i]}" AND DN_MaQL="${DN_MaQL}"`
+                    );
+                }
+                return res
+                    .status(201)
+                    .json({ message: "Xóa sản phẩm thành công" });
+            } catch (error) {
+                console.log(error);
+            }
         }
     },
     getOrder: async (req, res) => {
@@ -392,6 +448,7 @@ const dnController = {
                     const result = CTDH.map((item) => {
                         return {
                             DH_MaDH: item.DH_MaDH,
+                            PTTT_MaPTTT: item.PTTT_MaPTTT,
                             DH_NgayDat: item.DH_NgayDat,
                             DV_MaDV: item.DV_MaDV,
                             DV_Logo: item.DV_Logo,
@@ -412,6 +469,7 @@ const dnController = {
                             CTDH_ChuKyNhan: item.CTDH_ChuKyNhan,
                             CTDH_SoDienThoai: item.CTDH_SoDienThoai,
                             CTDH_GiaoHang: item.CTDH_GiaoHang,
+                            CTDH_GiaTri: item.CTDH_GiaTri,
                             TTDH_MaTTDH: item.TTDH_MaTTDH,
                             TTDH_TenTrangThai: item.TTDH_TenTrangThai,
                             DCCT_MaDCCT: item.DCCT_MaDCCT,
@@ -453,9 +511,9 @@ const dnController = {
                 if (ND_MaND === req.ND_MaND) {
                     let giaoHang = "";
                     const ghArray = CTDH_GiaoHang.split(", ");
-                    giaoHang = `${parseInt(ghArray[0]) + 1}, null, ${
-                        ghArray[2]
-                    }, ${ghArray[3]}`;
+                    giaoHang = `${
+                        ghArray[0] !== "null" ? parseInt(ghArray[0]) + 1 : 1
+                    }, null, ${ghArray[2]}, ${ghArray[3]}`;
 
                     if (parseInt(ghArray[0] + 1) === CTDH_SoLanNhan) {
                         await updateRows(
@@ -531,6 +589,127 @@ const dnController = {
                 }
             } catch (error) {
                 console.log(error);
+            }
+        }
+    },
+    createPayment: async (req, res) => {
+        if (req.LND_MaLND !== "DN") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            process.env.TZ = "Asia/Ho_Chi_Minh";
+
+            let createDate = moment(new Date()).format("YYYYMMDDHHmmss");
+
+            let ipAddr =
+                req.headers["x-forwarded-for"] ||
+                req.connection.remoteAddress ||
+                req.socket.remoteAddress ||
+                req.connection.socket.remoteAddress;
+
+            let tmnCode = process.env.VNP_TMN_CODE;
+            let secretKey = process.env.VNP_HASH_SECRET;
+            let vnpUrl = process.env.VNP_URL;
+            let returnUrl = process.env.VNP_RETURN_URL;
+
+            let { orderId, amount } = req.body;
+            console.log(req.body);
+            let vnp_Params = {};
+            vnp_Params["vnp_Version"] = "2.1.0";
+            vnp_Params["vnp_Command"] = "pay";
+            vnp_Params["vnp_TmnCode"] = tmnCode;
+            vnp_Params["vnp_Locale"] = "vi";
+            vnp_Params["vnp_CurrCode"] = "VND";
+            vnp_Params["vnp_TxnRef"] = orderId;
+            vnp_Params["vnp_OrderInfo"] = "Thanh toan cho ma GD:" + orderId;
+            vnp_Params["vnp_OrderType"] = "other";
+            vnp_Params["vnp_Amount"] = amount * 100;
+            vnp_Params["vnp_ReturnUrl"] = returnUrl;
+            vnp_Params["vnp_IpAddr"] = ipAddr;
+            vnp_Params["vnp_CreateDate"] = createDate;
+
+            vnp_Params = dnController.sortObject(vnp_Params);
+
+            let signData = querystring.stringify(vnp_Params, {
+                encode: false,
+            });
+            let hmac = crypto.createHmac("sha512", secretKey);
+            let signed = hmac
+                .update(new Buffer(signData, "utf-8"))
+                .digest("hex");
+            vnp_Params["vnp_SecureHash"] = signed;
+            vnpUrl +=
+                "?" + querystring.stringify(vnp_Params, { encode: false });
+            return res.status(201).json(vnpUrl);
+        }
+    },
+    vnpayIPN: async (req, res) => {
+        if (req.LND_MaLND !== "DN") {
+            return res.status(403).json({
+                status: false,
+                message: "Bạn không có quyền truy cập tài nguyên",
+            });
+        } else {
+            let vnp_Params = req.query;
+            let secureHash = vnp_Params["vnp_SecureHash"];
+
+            let orderId = vnp_Params["vnp_TxnRef"];
+            let rspCode = vnp_Params["vnp_ResponseCode"];
+
+            delete vnp_Params["vnp_SecureHash"];
+            delete vnp_Params["vnp_SecureHashType"];
+
+            vnp_Params = dnController.sortObject(vnp_Params);
+            let secretKey = process.env.VNP_HASH_SECRET;
+            let signData = querystring.stringify(vnp_Params, { encode: false });
+            let hmac = crypto.createHmac("sha512", secretKey);
+            let signed = hmac
+                .update(new Buffer(signData, "utf-8"))
+                .digest("hex");
+
+            const [order] = await getByColumn("don_hang", "DH_MaDH", orderId);
+            let paymentStatus = "0";
+
+            let checkOrderId = Object.keys(order).length > 0;
+            let checkAmount =
+                order.DH_GiaTri === vnp_Params["vnp_Amount"] / 100;
+            if (secureHash === signed) {
+                if (checkOrderId) {
+                    if (paymentStatus == "0") {
+                        if (rspCode == "00") {
+                            try {
+                                await updateRows(
+                                    "chi_tiet_don_hang",
+                                    `TTDH_MaTTDH="CXN"`,
+                                    `DH_MaDH="${orderId}"`
+                                );
+                            } catch (error) {
+                                console.log(error);
+                            }
+                            res.status(200).json({
+                                RspCode: "00",
+                                Message: "Success",
+                            });
+                        } else {
+                            res.status(200).json({
+                                RspCode: "00",
+                                Message: "Success",
+                            });
+                        }
+                    } else {
+                        res.status(200).json({
+                            RspCode: "02",
+                            Message:
+                                "This order has been updated to the payment status",
+                        });
+                    }
+                } else {
+                    console.log("Order not found");
+                }
+            } else {
+                console.log("Checksum failed");
             }
         }
     },

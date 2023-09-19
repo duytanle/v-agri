@@ -3,6 +3,7 @@ import Input from "../../CustomForm/Input";
 import Dropdown from "../../CustomForm/Dropdown";
 import ProductDescSlider from "../../ProductDetail/ProductDescSlider";
 import Checkbox from "../../CustomForm/Checkbox";
+import Radio from "../../CustomForm/Radio";
 import EmployeeAvatar from "../Employees/EmployeeAvatar";
 import { useSelector } from "react-redux";
 
@@ -20,6 +21,7 @@ const ProductCE = ({
     const [imageVerify, setImageVerify] = useState([]);
     const [fileImageVerify, setFileImageVerify] = useState([]);
     const [fileImageDesc, setFileImageDesc] = useState([]);
+    const [createPro, setCreatePro] = useState(false);
     const dropdownCategory = [
         {
             name: "Chọn danh mục",
@@ -66,9 +68,19 @@ const ProductCE = ({
             url: "https://res.cloudinary.com/dszjsaro8/image/upload/v1678977390/coobus/no-intro_s0lnmn.png",
         },
     ]);
+    console.log(imageData);
     const deleteImage = (id) => {
         const newImageData = imageData.filter((item) => item.id !== id);
-        setImageData(newImageData);
+        if (newImageData.length == 0) {
+            setImageData([
+                {
+                    id: "default",
+                    url: "https://res.cloudinary.com/dszjsaro8/image/upload/v1678977390/coobus/no-intro_s0lnmn.png",
+                },
+            ]);
+        } else {
+            setImageData(newImageData);
+        }
         fileImageDesc.splice(id - 1, 1);
         setFileImageDesc(fileImageDesc);
         setValue("productImageDesc", fileImageDesc);
@@ -92,7 +104,6 @@ const ProductCE = ({
         const listFile = [...event.target.files];
         setFileImageVerify([...fileImageVerify, ...listFile]);
         setValue("productImageVerify", [...fileImageVerify, ...listFile]);
-        setValue;
         const convertToArray = listFile.map((file, index) => {
             return { id: imageData + index, url: URL.createObjectURL(file) };
         });
@@ -121,6 +132,14 @@ const ProductCE = ({
                     url: "https://res.cloudinary.com/dszjsaro8/image/upload/v1678977390/coobus/no-intro_s0lnmn.png",
                 },
             ]);
+        }
+        if (Object.keys(productDetail).length > 0) {
+            let image = productDetail.SP_AnhMoTa.split(", ").map(
+                (item, index) => {
+                    return { id: index, url: item };
+                }
+            );
+            setImageData(image);
         }
 
         if (imageVerify.length > 0) {
@@ -328,7 +347,96 @@ const ProductCE = ({
                                 </>
                             ) : null}
                         </div>
+                        <div className="manage-product-standard text-lg my-2 grid grid-cols-12 gap-x-2 gap-y-1 w-full last:my-0 items-center">
+                            <label
+                                htmlFor="productStandard"
+                                className="font-bold col-span-3"
+                            >
+                                Khuyến mãi:
+                            </label>
 
+                            {productDetail.KM_MaKM || createPro ? (
+                                <>
+                                    <Input
+                                        control={control}
+                                        name="proPercent"
+                                        id="proPercent"
+                                        customClass="border-b-2 border-primary-color col-span-1"
+                                    ></Input>
+                                    <span>%</span>
+                                    <span className="ml-[-20px]">Từ</span>
+                                    <Input
+                                        type="date"
+                                        control={control}
+                                        id="proStart"
+                                        name="proStart"
+                                        customClass="w-[150px] px-1 py-[2px] border-2 border-primary-color rounded-lg ml-[-40px]"
+                                        min={new Date()
+                                            .toLocaleDateString("en-ZA")
+                                            .replaceAll("/", "-")}
+                                    ></Input>
+                                    <span className="ml-[80px]">Đến</span>
+                                    <Input
+                                        type="date"
+                                        control={control}
+                                        id="proEnd"
+                                        name="proEnd"
+                                        customClass="w-[150px] px-1 py-[2px] border-2 border-primary-color rounded-lg ml-[80px]"
+                                        min={new Date()
+                                            .toLocaleDateString("en-ZA")
+                                            .replaceAll("/", "-")}
+                                    ></Input>
+                                    <span
+                                        className="bg-secondary-color ml-[190px] w-10 h-10 flex items-center justify-center rounded-full text-white hover:bg-hover-secColor cursor-pointer"
+                                        onClick={() => {
+                                            setCreatePro((prev) => !prev);
+                                            setValue("promotion", false);
+                                            if (productDetail.KM_PhanTram) {
+                                                setValue(
+                                                    "proPercent",
+                                                    "delete"
+                                                );
+                                                setValue(
+                                                    "KM_MaKM",
+                                                    productDetail.KM_MaKM
+                                                );
+                                                setValue("proStart", "delete");
+                                                setValue("proEnd", "delete");
+                                            } else {
+                                                setValue("proPercent", "");
+                                                setValue("proStart", "");
+                                                setValue("proEnd", "");
+                                            }
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-trash"></i>
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="col-span-3 flex gap-3 items-center">
+                                        <Checkbox
+                                            control={control}
+                                            label="Tạo mới"
+                                            name="promotion"
+                                            id="promotion"
+                                            value={false}
+                                            onClick={() => {
+                                                setCreatePro((prev) => !prev);
+                                            }}
+                                        ></Checkbox>
+                                    </span>
+                                </>
+                            )}
+                            {errors.promotion ? (
+                                <>
+                                    <p className="col-span-3"></p>
+                                    <p className="text-red-700 text-sm col-span-9">
+                                        {errors.promotion?.message}
+                                    </p>
+                                </>
+                            ) : null}
+                        </div>
                         <div className="manage-product-standard text-lg my-2 grid grid-cols-12 gap-x-2 gap-y-1 w-full last:my-0 items-center">
                             <label
                                 htmlFor="productStandard"

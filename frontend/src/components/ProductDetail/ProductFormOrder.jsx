@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { updateAlan } from "../../store/alanai/alan-slice.js";
 import { toast } from "react-toastify";
+import axios from "../../api/axios.js";
+import { dnUpdateOrderProduct } from "../../store/dn/dn-slice.js";
 const ProductFormOrder = ({ edit = false, dataEdit }) => {
     const { productDetail } = useSelector((state) => state.product);
     const { user, userUnit, accessToken } = useSelector((state) => state.auth);
@@ -130,8 +132,24 @@ const ProductFormOrder = ({ edit = false, dataEdit }) => {
             payload: { token: accessToken, data },
         });
     };
-    const orderProduct = (values) => {
-        console.log(values);
+    const orderProduct = async (values) => {
+        const data = {
+            SP_MaSP: productDetail.SP_MaSP,
+            DN_MaQL: userUnit.DN_MaQL,
+            GH_SoLuong: `${values.productAmount} ${values.productUnit}`,
+            GH_ThoiHan: `${values.orderTime} ${values.orderTimeUnit}`,
+            GH_NgayNhan: values.startReceive,
+            GH_ChuKyNhan: `${values.orderCycle} ${values.orderCycleUnit}`,
+        };
+        await axios.post("/dn/add-to-cart", data, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        dispatch(
+            dnUpdateOrderProduct({ orderProduct: [productDetail.SP_MaSP] })
+        );
+        navigate("/dat_hang");
     };
 
     useEffect(() => {

@@ -16,24 +16,24 @@ function* handleAuthRegister({ payload }) {
         const response = yield call(requestAuthRegister, payload);
         toast.success(response.data.message, {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         toast.error(error.response.data.message, {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 2500,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     }
 }
@@ -61,7 +61,7 @@ function* handleAuthLogin({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     } catch (error) {
         toast.error(error.response.data.message, {
@@ -72,7 +72,7 @@ function* handleAuthLogin({ payload }) {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
-            theme: "light",
+            theme: "colored",
         });
     }
 }
@@ -124,7 +124,7 @@ function* handleAuthLogOut() {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-        theme: "light",
+        theme: "colored",
     });
 }
 function* handleAuthGetUserUnit({ payload }) {

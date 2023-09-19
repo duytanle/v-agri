@@ -1,8 +1,19 @@
 import { call, put } from "redux-saga/effects";
 
 import { toast } from "react-toastify";
-import { requestGetAnnounce, requestGetDashboard } from "./common-request";
-import { updateAnnounce, updateDashboard } from "./common-slice";
+import {
+    requestGetAnnounce,
+    requestGetAssessProduct,
+    requestGetDashboard,
+    requestGetUnitAssess,
+} from "./common-request";
+import {
+    updateAnnounce,
+    updateAssess,
+    updateDashboard,
+    updatePDUnitInfo,
+    updateUnitAssess,
+} from "./common-slice";
 function* handleGetAnnounce({ payload }) {
     try {
         const response = yield call(requestGetAnnounce, payload);
@@ -23,5 +34,45 @@ function* handleGetDashboard({ payload }) {
         console.log(error);
     }
 }
+function* handleGetAssessProduct({ payload }) {
+    try {
+        const response = yield call(requestGetAssessProduct, payload);
 
-export { handleGetAnnounce, handleGetDashboard };
+        if (response.data.status) {
+            yield put(updateAssess(response.data.assess));
+            yield put(updatePDUnitInfo(response.data.unit));
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+function* handleGetUnitAssess({ payload }) {
+    try {
+        const response = yield call(requestGetUnitAssess, payload);
+
+        if (response.data.status) {
+            yield put(updateAssess(response.data.result));
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function* handleGetUnitAssessProduct({ payload }) {
+    try {
+        const response = yield call(requestGetUnitAssess, payload);
+
+        if (response.data.status) {
+            yield put(updateUnitAssess(response.data.result));
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+export {
+    handleGetAnnounce,
+    handleGetDashboard,
+    handleGetAssessProduct,
+    handleGetUnitAssess,
+    handleGetUnitAssessProduct,
+};

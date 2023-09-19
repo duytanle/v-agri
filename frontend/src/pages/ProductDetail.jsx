@@ -7,6 +7,7 @@ import "../components/ProductDetail/ProductDetail.css";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { productUpdateProductDetail } from "../store/products/product-slice";
+import queryString from "query-string";
 const ProductDetail = () => {
     const { products, productDetail } = useSelector((state) => state.product);
     const { user, accessToken } = useSelector((state) => state.auth);
@@ -19,7 +20,24 @@ const ProductDetail = () => {
             payload: idProduct,
         });
     }, []);
-
+    useEffect(() => {
+        if (productDetail) {
+            dispatch({
+                type: "COMMON_GET_ASSESS_PRODUCT",
+                payload: queryString.stringify({
+                    DV_MaDV: productDetail?.DV_MaDV,
+                    SP_MaSP: idProduct,
+                    LDV_MaLDV: productDetail?.LDV_MaLDV,
+                }),
+            });
+            dispatch({
+                type: "COMMON_GET_ASSESS_UNIT_PRODUCT",
+                payload: queryString.stringify({
+                    DV_MaDV: productDetail?.DV_MaDV,
+                }),
+            });
+        }
+    }, [productDetail]);
     return (
         <div className="h-screen pt-[80px] px-8">
             <ProductInfo></ProductInfo>

@@ -18,6 +18,7 @@ const Checkbox = ({ control, label, customCheckbox = "", ...props }) => {
                 id={props.name}
                 checked={field.value}
                 className="hidden"
+                {...props}
             />
             <div className="h-[20px] w-[20px] shrink-0 flex items-center justify-center bg-white rounded-md border-2 border-primary-color">
                 <svg

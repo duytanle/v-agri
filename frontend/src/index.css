@@ -36,25 +36,46 @@
         text-overflow: ellipsis;
         line-height: 24px;
     }
-        .unit-logo:before,
-        .info-img:before,
-        .emp-avatar:before {
-            content: "";
-            position: absolute;
-            z-index: 10;
-            inset: 0;
-            padding-top: 3px;
-            padding-bottom: 3px;
-            border-radius: 100%;
-            background: linear-gradient(to bottom, var(--primary-color), #72e788, var(--primary-color));
-            -webkit-mask:
-                linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-            mask:
-                linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    
-        }
+    .unit-logo:before,
+    .info-img:before,
+    .emp-avatar:before {
+        content: "";
+        position: absolute;
+        z-index: 10;
+        inset: 0;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        border-radius: 100%;
+        background: linear-gradient(to bottom, var(--primary-color), #72e788, var(--primary-color));
+        -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+
+    }
+    .spinner {
+        
+        border: 5px solid #f3f3f3;
+        /* Light grey */
+        border-top: 5px solid transparent;
+        /* Blue */
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        animation: spin 2s linear infinite;
+    }
+
+   @keyframes spin {
+       0% {
+           transform: rotate(0deg);
+       }
+
+       100% {
+           transform: rotate(360deg);
+       }
+   }
 }

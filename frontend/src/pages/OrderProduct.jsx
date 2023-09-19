@@ -3,11 +3,15 @@ import "../components/OrderProduct/OrderProduct.css";
 import OrderList from "../components/OrderProduct/OrderList";
 import OrderPayment from "../components/OrderProduct/OrderPayment";
 import { useDispatch, useSelector } from "react-redux";
+import queryString from "query-string";
+import axios from "../api/axios.js";
 const OrderProduct = () => {
     const { orderProduct, totalOrder, cart } = useSelector((state) => state.dn);
     const { products } = useSelector((state) => state.product);
     const { userUnit, accessToken } = useSelector((state) => state.auth);
-
+    const [orderPayment, setOrderPayment] = useState("COD");
+    const [orderPrice, setOrderPrice] = useState([]);
+    const [payPrice, setPayPrice] = useState(0);
     const dispatch = useDispatch();
 
     const [infoShip, setInfoShip] = useState([
@@ -22,7 +26,22 @@ const OrderProduct = () => {
             };
         }),
     ]);
-    const handleOrder = () => {
+    useEffect(() => {
+        dispatch({
+            type: "GET_PRODUCT",
+            payload: queryString.stringify({
+                search: "",
+                unitID: "",
+                type: "DN",
+                productNew: "",
+                productTop: false,
+                productStandard: "all",
+                productPrice: "",
+                category: "",
+            }),
+        });
+    }, []);
+    const handleOrder = async () => {
         let info = [];
         for (let i = 0; i < orderProduct.length; ++i) {
             let productInfo = products?.find(
@@ -41,18 +60,42 @@ const OrderProduct = () => {
             infoShip,
             totalOrder,
             info,
+            orderPayment,
+            orderPrice,
             DN_MaQL: userUnit.DN_MaQL,
         };
-
-        dispatch({
-            type: "ORDER_PRODUCT",
-            payload: { token: accessToken, data },
-        });
+        if (orderPayment === "COD") {
+            dispatch({
+                type: "ORDER_PRODUCT",
+                payload: { token: accessToken, data },
+            });
+        } else {
+            try {
+                const resOrder = await axios.post("/dn/order", data, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+                const response = await axios.post(
+                    "/dn/create-payment",
+                    { orderId: resOrder.data.DH_MaDH, amount: payPrice },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+                window.location.assign(response.data);
+            } catch (error) {
+                console.log(error);
+            }
+        }
     };
     useEffect(() => {
         if (orderProduct.length == 0) {
             window.history.back();
         }
+        dispatch({ type: "GET_CART", payload: accessToken });
     }, []);
     return (
         <div className="h-screen pt-[100px] px-8 rounded-lg box-shadow-custom">
@@ -65,27 +108,52 @@ const OrderProduct = () => {
                         <OrderList
                             infoShip={infoShip}
                             setInfoShip={setInfoShip}
+                            setOrderPrice={setOrderPrice}
+                            setPayPrice={setPayPrice}
                         ></OrderList>
                     </div>
                 </div>
 
                 <div className="payment col-span-8 box-shadow-custom rounded-lg px-4 py-3 h-[25vh] max-h-[25vh]">
-                    <OrderPayment></OrderPayment>
+                    <OrderPayment
+                        setOrderPayment={setOrderPayment}
+                    ></OrderPayment>
                 </div>
                 <div className="order-confirm col-span-4 box-shadow-custom rounded-lg px-4 py-3 h-[25vh] max-h-[25vh]">
                     <div className="order-confirm-title text-2xl font-bold">
                         Thanh toán
                     </div>
-                    <div className="flex justify-between text-lg my-6">
-                        <span className="font-bold">Tổng giá trị: </span>
-                        <span className="text-red-700 font-bold">
-                            {`${totalOrder
-                                .toString()
-                                .replace(
-                                    /(\d)(?=(\d\d\d)+(?!\d))/g,
-                                    "$1."
-                                )} đồng`}
-                        </span>
+                    <div
+                        className={`text-lg ${
+                            orderPayment === "COD" ? "my-6" : "my-2"
+                        }`}
+                    >
+                        <div className="flex justify-between">
+                            <span className="font-bold">Tổng giá trị: </span>
+                            <span className="text-red-700 font-bold">
+                                {`${totalOrder
+                                    .toString()
+                                    .replace(
+                                        /(\d)(?=(\d\d\d)+(?!\d))/g,
+                                        "$1."
+                                    )} đồng`}
+                            </span>
+                        </div>
+                        {orderPayment === "ONLINE" ? (
+                            <div className="flex justify-between">
+                                <span className="font-bold">
+                                    Thanh toán online:{" "}
+                                </span>
+                                <span className="text-red-700 font-bold">
+                                    {`${payPrice
+                                        .toString()
+                                        .replace(
+                                            /(\d)(?=(\d\d\d)+(?!\d))/g,
+                                            "$1."
+                                        )} đồng`}
+                                </span>
+                            </div>
+                        ) : null}
                     </div>
                     <div className="text-center">
                         <div

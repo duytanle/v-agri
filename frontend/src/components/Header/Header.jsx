@@ -10,7 +10,7 @@ import HeaderEx from "./HeaderEx";
 const Header = ({ children }) => {
     const [show, setShow, nodeRef] = useClickOutSide();
 
-    const { user } = useSelector((state) => state.auth);
+    const { user, userUnit } = useSelector((state) => state.auth);
     const { cart, intro } = useSelector((state) => state.dn);
     const { announce } = useSelector((state) => state.common);
     const [openModal, setOpenModal] = useState("");
@@ -43,7 +43,7 @@ const Header = ({ children }) => {
                 {user ? (
                     user.LND_MaLND === "DN" || user.LND_MaLND === "HTX" ? (
                         <NavLink to="/quan_ly" className="text-lg font-bold">
-                            QUẢN LÝ CỬA HÀNG
+                            QUẢN LÝ ĐƠN VỊ
                         </NavLink>
                     ) : null
                 ) : null}
@@ -188,15 +188,15 @@ const Header = ({ children }) => {
                     <HeaderEx
                         imgLink="/images/bell.png"
                         imgDesc="bell"
-                        number={announce.length}
+                        number={announce?.length}
                         title="Các thông báo mới"
                         footer={`Còn ${
-                            announce.length > 3 ? announce.length - 3 : 0
+                            announce?.length > 3 ? announce?.length - 3 : 0
                         } thông báo nữa`}
                         button="Xem tất cả"
                     >
-                        {announce.length > 0 &&
-                            announce.map((item, index) => (
+                        {announce?.length > 0 &&
+                            announce?.map((item, index) => (
                                 <div
                                     className="message-item my-4 cursor-pointer"
                                     key={index}
@@ -209,7 +209,7 @@ const Header = ({ children }) => {
                                     </p>
                                 </div>
                             ))}
-                        {announce.length === 0 && (
+                        {announce?.length === 0 && (
                             <div className="empty w-full flex flex-col justify-center items-center gap-2">
                                 <img
                                     src="/images/empty-bell.png"
@@ -244,7 +244,11 @@ const Header = ({ children }) => {
                             }}
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1676439977206-b5ffdfc03da2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"
+                                src={
+                                    user?.ND_AnhDaiDien ||
+                                    userUnit?.DV_Logo ||
+                                    "https://res.cloudinary.com/dszjsaro8/image/upload/v1678934807/coobus/Logo_pikttr.png"
+                                }
                                 alt="logo"
                                 className="h-full w-full object-cover rounded-full"
                             />

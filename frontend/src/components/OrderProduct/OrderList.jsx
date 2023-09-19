@@ -2,7 +2,7 @@ import React, { Fragment, useState } from "react";
 import OrderItem from "./OrderItem";
 import OrderAddress from "./OrderAddress";
 import { useSelector } from "react-redux";
-const OrderList = ({ infoShip, setInfoShip }) => {
+const OrderList = ({ infoShip, setInfoShip, setOrderPrice, setPayPrice }) => {
     const { cart, updateCartItem, orderProduct } = useSelector(
         (state) => state.dn
     );
@@ -77,6 +77,10 @@ const OrderList = ({ infoShip, setInfoShip }) => {
                                                     setInfoShip={setInfoShip}
                                                     infoShip={infoShip}
                                                     index={index}
+                                                    setOrderPrice={
+                                                        setOrderPrice
+                                                    }
+                                                    setPayPrice={setPayPrice}
                                                 ></OrderItem>
                                             </div>
                                         )

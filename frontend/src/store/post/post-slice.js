@@ -6,6 +6,8 @@ const postSlice = createSlice({
         dashboard: undefined,
         posts: undefined,
         currentPost: undefined,
+        productVerify: undefined,
+        currentVerify: undefined,
     },
     reducers: {
         updateDashboard: (state, action) => ({
@@ -20,9 +22,22 @@ const postSlice = createSlice({
             ...state,
             currentAccount: action.payload,
         }),
+        updateProductVerify: (state, action) => ({
+            ...state,
+            productVerify: action.payload,
+        }),
+        updateCurrentVerify: (state, action) => ({
+            ...state,
+            currentVerify: action.payload,
+        }),
     },
 });
 
-export const { updateDashboard, updatePosts, updateCurrentPost } =
-    postSlice.actions;
+export const {
+    updateDashboard,
+    updatePosts,
+    updateCurrentPost,
+    updateProductVerify,
+    updateCurrentVerify,
+} = postSlice.actions;
 export default postSlice.reducer;

@@ -120,7 +120,6 @@ function* handleDNOrderProduct({ payload }) {
     }
 }
 function* handleGetOrder({ payload }) {
-    console.log(payload);
     try {
         const response = yield call(requestGetOrder, payload);
         if (response.data.status) {

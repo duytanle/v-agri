@@ -3,6 +3,9 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 const UnitInfo = () => {
     const { productDetail } = useSelector((state) => state.product);
+    const { pdUnitInfo, assess, unitAssess } = useSelector(
+        (state) => state.common
+    );
     const navigate = useNavigate();
     return (
         <div className="unit-info max-h-[48%] rounded-lg box-shadow-custom py-3 px-4 w-full">
@@ -52,22 +55,30 @@ const UnitInfo = () => {
             </div>
             <div className="unit-short-info flex justify-between items-center my-5">
                 <div className="amount-product">
-                    <p className="text-center font-bold">30</p>
+                    <p className="text-center font-bold">
+                        {pdUnitInfo?.numProduct}
+                    </p>
                     <p>Sản phẩm</p>
                 </div>
                 <div className="assess-star flex flex-col items-center">
                     <div className="flex items-center gap-2 ">
-                        <p className="font-bold">4.5</p>
-                        <img
-                            src="/images/star.png"
-                            alt=""
-                            className="inline-block w-5 h-5"
-                        />
+                        {unitAssess?.tb ? (
+                            <>
+                                <p className="font-bold">{unitAssess?.tb}</p>
+                                <img
+                                    src="/images/star.png"
+                                    alt=""
+                                    className="inline-block w-5 h-5"
+                                />
+                            </>
+                        ) : (
+                            <p className="font-bold">Chưa có</p>
+                        )}
                     </div>
                     <p>Đánh giá</p>
                 </div>
                 <div className="par-time">
-                    <p className="text-center font-bold">5 năm</p>
+                    <p className="text-center font-bold">{pdUnitInfo?.time}</p>
                     <p>Đã tham gia</p>
                 </div>
                 <div className="view-unit flex gap-4">

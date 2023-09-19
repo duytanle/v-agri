@@ -54,6 +54,10 @@ const AdPostProduct = lazy(() =>
 const AdPostReport = lazy(() =>
     import("./components/AdminPost/AdPostReport.jsx")
 );
+const AdPostVerify = lazy(() =>
+    import("./components/AdminPost/AdPostVerify.jsx")
+);
+const AdminFinance = lazy(() => import("./pages/AdminFinance.jsx"));
 const Chat = lazy(() => import("./components/UnitManage/Chat.jsx"));
 const Announce = lazy(() => import("./components/UnitManage/Announce.jsx"));
 const Employees = lazy(() => import("./components/UnitManage/Employees.jsx"));
@@ -67,6 +71,7 @@ const OrderDetail = lazy(() =>
 );
 const Cart = lazy(() => import("./components/UnitManage/Cart.jsx"));
 const Intro = lazy(() => import("./components/UnitManage/Intro.jsx"));
+const DNPayment = lazy(() => import("./pages/DNPayment.jsx"));
 function App() {
     const { user, userUnit, accessToken } = useSelector((state) => state.auth);
     const { products } = useSelector((state) => state.product);
@@ -145,6 +150,9 @@ function App() {
                 case "QTVBD":
                     renderCPN = <AdminPost />;
                     break;
+                case "QLTC":
+                    renderCPN = <AdminFinance />;
+                    break;
                 default:
                     renderCPN = <HomeProduct />;
                     break;
@@ -202,6 +210,14 @@ function App() {
                                 ></Route>
                             </>
                         )}
+                        {/* {user && user.LND_MaLND === "QLTC" && (
+                            <>
+                                <Route
+                                    path="/"
+                                    element={<AdminFinance></AdminFinance>}
+                                ></Route>
+                            </>
+                        )} */}
                         {user && user.LND_MaLND === "QTVBD" && (
                             <>
                                 <Route
@@ -211,6 +227,10 @@ function App() {
                                 <Route
                                     path="/bai_dang"
                                     element={<AdPostProduct />}
+                                ></Route>
+                                <Route
+                                    path="/chuan"
+                                    element={<AdPostVerify />}
                                 ></Route>
                                 <Route
                                     path="/bao_cao"
@@ -306,6 +326,12 @@ function App() {
                         <Route
                             path="/quan_tri"
                             element={<Admin></Admin>}
+                        ></Route>
+                    ) : null}
+                    {user && user.LND_MaLND === "DN" ? (
+                        <Route
+                            path="/thanh_toan"
+                            element={<DNPayment></DNPayment>}
                         ></Route>
                     ) : null}
                     <Route path="*" element={<></>}></Route>

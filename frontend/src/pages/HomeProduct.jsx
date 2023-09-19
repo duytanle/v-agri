@@ -63,11 +63,19 @@ const HomeProduct = () => {
         if (Object.keys(command).length > 0) {
             switch (command.COMMAND) {
                 case "XEM_SAN_PHAM": {
-                    navigate(
-                        `/chi_tiet_san_pham/${
-                            currentProducts[command.value - 1].SP_MaSP
-                        }`
-                    );
+                    if (command.value === -1) {
+                        navigate(
+                            `/chi_tiet_san_pham/${
+                                products[products.length - 1].SP_MaSP
+                            }`
+                        );
+                    } else {
+                        navigate(
+                            `/chi_tiet_san_pham/${
+                                products[command.value - 1].SP_MaSP
+                            }`
+                        );
+                    }
                     break;
                 }
                 default: {

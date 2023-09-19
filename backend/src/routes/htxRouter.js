@@ -25,4 +25,5 @@ router.put("/confirm-order", verifyToken, htxController.confirmOrder);
 router.put("/cancel-order", verifyToken, htxController.cancelOrder);
 router.put("/ship-order", verifyToken, htxController.shipOrder);
 router.put("/intro-product", verifyToken, htxController.introProduct);
+router.put("/update-product", verifyToken, htxController.updateProduct);
 export default router;

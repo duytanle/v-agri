@@ -22,8 +22,8 @@ const Filter = ({
     const standardData = [
         { name: "Tất cả", value: "all" },
         { name: "OCOP", value: "OCOP" },
-        { name: "VietGap", value: "VG" },
-        { name: "GlobalGAP", value: "GB" },
+        { name: "VietGAP", value: "VietGAP" },
+        { name: "GlobalGAP", value: "GlobalGAP" },
     ];
     const priceData = [
         { name: "Mặc định", value: "all" },

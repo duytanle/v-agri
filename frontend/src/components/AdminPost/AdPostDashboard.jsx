@@ -2,13 +2,25 @@ import React from "react";
 import BarChart from "../Chart/BarChart";
 import PieChart from "../Chart/PieChart";
 import DashboardNumber from "../UnitManage/Dashboard/DashboardNumber";
+import { useSelector } from "react-redux";
 
 const AdPostDashboard = () => {
+    const { dashboard } = useSelector((state) => state.post);
+    const pieData = dashboard
+        ? [dashboard.dnProduct, dashboard.htxProduct]
+        : [0, 0];
+    const columnData = () => {
+        let data = Array(12).fill(0);
+        dashboard?.columnData?.map((item) => {
+            data[parseInt(item.month) - 1] = item.sanPham;
+        });
+        return data;
+    };
     const dataPieChart = {
-        labels: ["Bán", "Mua"],
+        labels: ["Doanh Nghiệp", "HTX"],
         datasets: [
             {
-                data: [120000, 190000],
+                data: pieData,
                 backgroundColor: ["rgb(149, 189, 255)", "rgb(253, 93, 93)"],
                 borderColor: ["rgb(149, 189, 255)", "rgb(253, 93, 93)"],
                 borderWidth: 1,
@@ -33,7 +45,7 @@ const AdPostDashboard = () => {
         datasets: [
             {
                 label: "Số bài đăng",
-                data: [10, 12, 14, 15, 12, 23, 24, 12, 15, 16, 22, 30],
+                data: columnData(),
                 backgroundColor: "#007739",
                 borderColor: "#007739",
                 borderWidth: 2,
@@ -46,17 +58,17 @@ const AdPostDashboard = () => {
             <div className="dashboard-number my-2 flex justify-evenly ">
                 <DashboardNumber
                     iconClass="fa-solid fa-newspaper"
-                    number="30"
+                    number={dashboard ? dashboard.product : 0}
                     text="Bài đăng"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-check-to-slot"
-                    number={3}
+                    number={dashboard ? dashboard.productVerify : 0}
                     text="Xác nhận chuẩn"
                 ></DashboardNumber>
                 <DashboardNumber
                     iconClass="fa-solid fa-flag"
-                    number={3}
+                    number={0}
                     text="Báo cáo"
                 ></DashboardNumber>
                 {/* <DashboardNumber

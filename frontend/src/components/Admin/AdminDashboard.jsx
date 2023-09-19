@@ -38,7 +38,6 @@ const AdminDashboard = () => {
         });
         return data;
     };
-    console.log(dataColumn());
     const dataBarChar = {
         labels: [
             "Tháng 1",

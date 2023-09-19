@@ -1,4 +1,4 @@
-import express from "express";
+import express, { query } from "express";
 import verifyToken from "../middleware/auth.js";
 import commonController from "../controllers/commonController.js";
 import uploadCloud from "../configs/cloudinary.config.js";
@@ -28,4 +28,7 @@ router.get("/get-order", verifyToken, dnController.getOrder);
 router.put("/receive-order", verifyToken, dnController.receiveOrder);
 router.get("/get-intro", verifyToken, dnController.getIntro);
 router.put("/update-product", verifyToken, dnController.updateProduct);
+router.post("/create-payment", verifyToken, dnController.createPayment);
+router.post("/delete-order", verifyToken, dnController.deleteOrder);
+router.get("/vnpay_ipn", verifyToken, dnController.vnpayIPN);
 export default router;
